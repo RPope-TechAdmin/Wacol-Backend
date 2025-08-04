@@ -11,6 +11,12 @@ import time
 from sqlalchemy import create_engine, text
 
 # === CONFIGURATION ===
+cors_headers = {
+    "Access-Control-Allow-Origin": "https://delightful-tree-0888c340f.1.azurestaticapps.net", 
+    "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+    "Access-Control-Allow-Headers": "Content-Type, Accept",
+    "Access-Control-Max-Age": "86400"
+}
 
 FIELD_MAP = {
     "fixation": [
