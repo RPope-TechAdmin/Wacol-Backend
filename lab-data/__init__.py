@@ -225,6 +225,7 @@ PARTIAL_MATCH_MAP = {
 }
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Function Triggered")
     try:
         logging.info("Parsing multipart form data...")
         content_type = req.headers.get("Content-Type", "")
