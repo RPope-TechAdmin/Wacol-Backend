@@ -4,6 +4,6 @@ pdfplumber==0.5.28
 sqlalchemy
 pymssql
 python-tds
-requests_toolbelt
+requests_toolbelt>=1.0.0
 requests
 python-multipart
