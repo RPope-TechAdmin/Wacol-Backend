@@ -341,13 +341,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         body = req.get_body()
         multipart_data = decoder.MultipartDecoder(body, content_type)
 
-        response_body={
-            "filename": filename,
-            "queries":queries
-        }
-
-        
-
         responses = []
 
         for part in multipart_data.parts:
@@ -360,6 +353,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 logging.warning(f"Skipped non-PDF file: {filename}")
                 continue
 
+            response_body={
+               "filename": filename,
+              "queries":queries
+        }
             try:
                 queries = generate_sql_queries_from_pdf(part.content, filename)
                 responses.append({
