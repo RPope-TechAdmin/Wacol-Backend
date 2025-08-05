@@ -341,6 +341,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         body = req.get_body()
         multipart_data = decoder.MultipartDecoder(body, content_type)
 
+        response_body={
+            "filename": filename,
+            "queries":queries
+        }
+
+        
+
         responses = []
 
         for part in multipart_data.parts:
@@ -368,9 +375,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 })
 
         return func.HttpResponse(
-            body=json.dumps(responses, indent=2),
+            body=json.dumps(response_body),
+            mimetype="application/json",
             status_code=200,
-            mimetype="application/json"
+            headers=cors_headers
         )
 
     except Exception as e:
