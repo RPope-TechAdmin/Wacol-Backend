@@ -314,13 +314,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             filename_match = re.search(r'filename="(.+?)"', disposition)
             filename = filename_match.group(1) if filename_match else "Unknown"
 
-            queries = generate_sql_queries_from_pdf(part.content, filename)
+            # ✅ Check if it's a PDF file
+            if not filename.lower().endswith(".pdf"):
+                logging.warning(f"Skipped non-PDF file: {filename}")
+                continue
 
-            responses.append({
-                "file": filename,
-                "query_count": len(queries),
-                "queries": queries
-            })
+            try:
+                queries = generate_sql_queries_from_pdf(part.content, filename)
+                responses.append({
+                    "file": filename,
+                    "query_count": len(queries),
+                    "queries": queries
+                })
+            except Exception as e:
+                logging.exception(f"Failed to parse PDF: {filename}")
+                responses.append({
+                    "file": filename,
+                    "error": str(e)
+                })
 
         return func.HttpResponse(
             body=json.dumps(responses, indent=2),
