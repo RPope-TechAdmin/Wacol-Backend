@@ -293,6 +293,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
 
                 query = f"INSERT INTO {table_name} ({', '.join(fields)}) VALUES ({', '.join(values)});"
                 queries.append(query)
+                logging.info(queries)
 
     pdf.close()
     return queries
