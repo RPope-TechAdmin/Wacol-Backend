@@ -239,21 +239,21 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
     try:
         pdf = pdfplumber.open(BytesIO(file_bytes))
     except Exception as e:
-        print(f"❌ Failed to load PDF: {e}")
+        logging.info(f"❌ Failed to load PDF: {e}")
         return []
 
     for page_number, page in enumerate(pdf.pages[2:], start=3):
-        print(f"--- Processing page {page_number} ---")
+        logging.info(f"--- Processing page {page_number} ---")
 
         # Detect sub-matrix
         text = page.extract_text()
         submatrix_match = re.search(r"Sub[-\s]?Matrix\s*[:\-]?\s*(.*)", text, re.IGNORECASE)
         if not submatrix_match:
-            print("⚠️ Sub-Matrix not found on this page")
+            logging.info("⚠️ Sub-Matrix not found on this page")
             continue
 
         submatrix_label = submatrix_match.group(1).strip().lower()
-        print(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
+        logging.info(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
 
         submatrix_key = None
         for key in FIELD_MAP:
@@ -262,18 +262,18 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
                 break
 
         if not submatrix_key:
-            print(f"⚠️ No field map found for sub-matrix: {submatrix_label}")
+            logging.info(f"⚠️ No field map found for sub-matrix: {submatrix_label}")
             continue
 
         field_map = FIELD_MAP[submatrix_key]
         table_name = TABLE_MAP.get(submatrix_key)
 
         if not table_name:
-            print(f"⚠️ No table mapping for sub-matrix: {submatrix_key}")
+            logging.info(f"⚠️ No table mapping for sub-matrix: {submatrix_key}")
             continue
 
         tables = page.extract_tables()
-        print(f"Tables found on page {page_number}: {len(tables)} | Sub-Matrix: {submatrix_key}")
+        logging.info(f"Tables found on page {page_number}: {len(tables)} | Sub-Matrix: {submatrix_key}")
 
         if not tables:
             continue
@@ -324,10 +324,10 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             )
 
             sql = f"INSERT INTO {table_name} ({columns_str}) VALUES ({values_str});"
-            print(f"✅ Generated SQL:\n{sql}")
+            logging.info(f"✅ Generated SQL:\n{sql}")
             queries.append(sql)
 
-        print(f"--- Finished processing page {page_number} ---\n")
+        logging.info(f"--- Finished processing page {page_number} ---\n")
 
     return queries
 
@@ -361,11 +361,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "queries": queries
                 })
                 if not queries:
-                    print("⚠️ No SQL queries were generated.")
+                    logging.info("⚠️ No SQL queries were generated.")
                 else:
-                    print(f"✅ Generated {len(queries)} SQL queries:")
+                    logging.info(f"✅ Generated {len(queries)} SQL queries:")
                     for i, q in enumerate(queries, 1):
-                        print(f"[Query {i}]\n{q}")
+                        logging.info(f"[Query {i}]\n{q}")
 
             except Exception as e:
                 logging.exception(f"Failed to parse PDF: {filename}")
