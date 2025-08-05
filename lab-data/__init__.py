@@ -272,6 +272,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 match = re.search(r"Sub[- ]?Matrix[:\s]+([A-Za-z0-9\-/ ]+)", text, re.IGNORECASE)
                 if match:
                     current_submatrix = match.group(1).strip().lower().replace(" ", "-")
+                    logging.info(current_submatrix)
 
                 if not current_submatrix or current_submatrix not in FIELD_MAP:
                     continue
@@ -303,6 +304,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                             "Sampling Date/Time": f"'{date_val.strip()}'" if date_val.strip() else "NULL"
                         })
 
+                        logging.info(sample_location)
+                        logging.info(sample_datetimes)
+                        logging.info(page_number)
+
                         i = 3
                         while i < len(table):
                             row = table[i]
@@ -312,6 +317,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
                             analyte = row[0].strip()
                             normalized_analyte = normalize(analyte)
+                            logging.info(f"Analyte: {analyte}, Normalised: {normalized_analyte}")
 
                             if not analyte or normalized_analyte in NON_ANALYTE_LABELS:
                                 i += 1
@@ -320,18 +326,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                             match = next((f for f in analyte_fields if normalize(f) == normalized_analyte), None)
 
                             if not match:
+                                logging.info(f"Unable to find exact match for {analyte}, Checking against CAS")
                                 cas_hits = re.findall(r'\b\d{2,7}-\d{2}-\d\b', analyte)
                                 for cas in cas_hits:
                                     if cas in CAS_TO_FULL:
                                         full_name = CAS_TO_FULL[cas]
                                         if full_name in analyte_fields:
                                             match = full_name
+                                            logging.info(f"Match Identified: {analyte} -->{match}")
                                             break
 
                             if not match and normalized_analyte in PARTIAL_MATCH_MAP:
+                                logging.info(f"Match not found in CAS for {analyte}, Checking for Partial Match")
                                 match = PARTIAL_MATCH_MAP[normalized_analyte]
 
                             if not match:
+                                logging.info(f"Partial Match not found, Checking for Possible Abbreviation")
                                 abbrev_found = re.findall(r'\b[a-z]{2,6}\b', normalized_analyte)
                                 for abbrev in abbrev_found:
                                     if abbrev in ABBREV_TO_FULL:
