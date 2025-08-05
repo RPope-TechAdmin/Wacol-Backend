@@ -53,7 +53,7 @@ SUBMATRIX_MAP = {
             "C15 - C28 Fraction ----","C29 - C36 Fraction ----","C10 - C36 Fraction (sum) ----","C6 - C10 Fraction","C6 - C10 Fraction  minus BTEX (F1)",">C10 - C16 Fraction ----",">C16 - C34 Fraction ----",">C34 - C40 Fraction ----",">C10 - C40 Fraction (sum) ----",">C10 - C16 Fraction minus Naphthalene (F2) ----","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene",
             "ortho-Xylene","Total Xylenes ----","Sum of BTEX ----","Naphthalene","Dibromo-DDE","DEF","Phenol-d6","2-Chlorophenol-D4","2.4.6-Tribromophenol","2-Fluorobiphenyl","Anthracene-d10","4-Terphenyl-d14","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene"
             ],
-    "TCLP LEACHATE": ["File Name","Sample Location","Sampling Date/Time","Moisture Content","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","alpha-BHC","Hexachlorobenzene (HCB)","beta-BHC","gamma-BHC - (Lindane)","delta-BHC","Heptachlor","Aldrin",
+    "TCLP": ["File Name","Sample Location","Sampling Date/Time","Moisture Content","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","alpha-BHC","Hexachlorobenzene (HCB)","beta-BHC","gamma-BHC - (Lindane)","delta-BHC","Heptachlor","Aldrin",
             "Heptachlor epoxide","Total Chlordane (sum) ----","trans-Chlordane","alpha-Endosulfan","cis-Chlordane","Dieldrin","4.4`-DDE","Endrin","Endosulfan (sum)","beta-Endosulfan","4.4`-DDD","Endrin aldehyde","Endosulfan sulfate","4.4`-DDT",
             "Endrin ketone","Methoxychlor","Sum of DDD + DDE + DDT","Sum of Aldrin + Dieldrin","Dichlorvos","Demeton-S-methyl","Monocrotophos","Dimethoate","Diazinon","Chlorpyrifos-methyl","Parathion-methyl","Malathion",
             "Fenthion","Chlorpyrifos","Parathion","Pirimphos-ethyl","Chlorfenvinphos","Bromophos-ethyl","Fenamiphos","Prothiofos","Ethion","Carbophenothion","Azinphos Methyl","Phenol","2-Chlorophenol","2-Methylphenol","3- & 4-Methylphenol",
@@ -62,7 +62,7 @@ SUBMATRIX_MAP = {
             "C15 - C28 Fraction ----","C29 - C36 Fraction ----","C10 - C36 Fraction (sum) ----",">C10 - C16 Fraction ----",">C16 - C34 Fraction ----",">C34 - C40 Fraction ----",">C10 - C40 Fraction (sum) ----",">C10 - C16 Fraction minus Naphthalene (F2) ----","Dibromo-DDE","DEF",
             "Phenol-d6","2-Chlorophenol-D4","2.4.6-Tribromophenol","2-Fluorobiphenyl","Anthracene-d10","4-Terphenyl-d14"
             ],
-    "ZHE LEACHATE": ["File Name","Sample Location","Sampling Date/Time","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","Styrene","ortho-Xylene","Isopropylbenzene","n-Propylbenzene","1.3.5-Trimethylbenzene","sec-Butylbenzene","1.2.4-Trimethylbenzene","tert-Butylbenzene","p-Isopropyltoluene","n-Butylbenzene",
+    "ZHE": ["File Name","Sample Location","Sampling Date/Time","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","Styrene","ortho-Xylene","Isopropylbenzene","n-Propylbenzene","1.3.5-Trimethylbenzene","sec-Butylbenzene","1.2.4-Trimethylbenzene","tert-Butylbenzene","p-Isopropyltoluene","n-Butylbenzene",
                      "C6 - C9 Fraction ----","C6 - C10 Fraction","C6 - C10 Fraction  minus BTEX (F1)","Total Xylenes ----","Sum of BTEX ----","Naphthalene","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene"
             ],
 }
@@ -247,10 +247,13 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
 
         # Detect sub-matrix
         text = page.extract_text()
-        submatrix_match = re.search(r"Sub[-\s]?Matrix\s*[:\-]?\s*(.*)", text, re.IGNORECASE)
-        if not submatrix_match:
-            logging.info("⚠️ Sub-Matrix not found on this page")
-            continue
+        submatrix_match = re.search(r"Sub-Matrix\s*[:\-]?\s*([A-Z]+)", text, re.IGNORECASE)
+        if submatrix_match:
+            submatrix_raw = submatrix_match.group(1).strip()
+            submatrix = submatrix_raw.split()[0].upper()  # Only take first word
+        else:
+            submatrix = "UNKNOWN"
+
 
         submatrix_label = submatrix_match.group(1).strip().lower()
         logging.info(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
