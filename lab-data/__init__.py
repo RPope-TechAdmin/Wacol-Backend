@@ -246,8 +246,8 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             logging.info(f"Page {i+1}: No Sub-Matrix found.")
             continue
 
-        field_map = FIELD_MAPS.get(submatrix)
-        table_name = TABLE_MAP.get(submatrix)
+        field_map = FIELD_MAP.get(submatrix)
+        table_name = QUERY_TYPE_TO_TABLE.get(submatrix)
         if not field_map or not table_name:
             logging.info(f"Page {i+1}: No field/table mapping for sub-matrix '{submatrix}'.")
             continue
