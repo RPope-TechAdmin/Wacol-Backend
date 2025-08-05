@@ -296,7 +296,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             for row in table[2:]:
                 if len(row) < 4:
                     continue
-                analyte_raw = row[0].strip()
+                analyte_raw = (row[0] or "").strip()
                 analyte = normalize(analyte_raw)
 
                 if any(normalize(f) == analyte for f in current_field_map):
