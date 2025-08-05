@@ -242,6 +242,11 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
 
         page_text = page.extract_text()
         submatrix = extract_submatrix(page_text)
+        if submatrix and submatrix.lower() in FIELD_MAP:
+            print(f"Submatrix '{submatrix}' found and mapped")
+        else:
+            print(f"Submatrix '{submatrix}' not mapped or invalid")
+
         if not submatrix:
             logging.info(f"Page {i+1}: No Sub-Matrix found.")
             continue
@@ -253,6 +258,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             continue
 
         tables = page.extract_tables()
+        print(f"Page {page + 1}: Found {len(tables)} tables")
         if not tables:
             logging.info(f"Page {i+1}: No tables found.")
             continue
@@ -261,7 +267,9 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             if len(table) < 3:
                 continue
 
-            headers = table[0]
+            headers = table[0]  # or however you're indexing it
+            print(f"Header row: {headers}")
+
             if headers[3] == "----":
                 continue  # Skip invalid table
 
@@ -280,6 +288,8 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
                 }
 
                 for row in table[2:]:
+                    for row in table[2:]:
+                        print(f"Row: {row}")
                     analyte = row[0]
                     value = row[col_idx]
                     row_data[analyte] = value
