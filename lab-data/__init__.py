@@ -326,14 +326,19 @@ def build_insert_query(table_name, field_map, data_rows):
         row_values = []
         for field in fields:
             value = row.get(field)
-            if value is None or value.strip() == "" or value.strip() == "----":
+            if value is None:
                 row_values.append("NULL")
-            elif re.match(r"^[\d\.<>=-]+$", value):
-                row_values.append(value)
             else:
-                escaped_value = value.replace("'", "''")
-                row_values.append(f"'{escaped_value}'")
-        values_list.append(f"({', '.join(row_values)})")
+                val_stripped = value.strip()
+                if val_stripped == "" or val_stripped == "----":
+                    row_values.append("NULL")
+                elif re.match(r"^[\d\.<>=-]+$", val_stripped):
+                    row_values.append(val_stripped)
+                else:
+                    escaped_value = val_stripped.replace("'", "''")
+                    row_values.append(f"'{escaped_value}'")
+
+                    values_list.append(f"({', '.join(row_values)})")
 
     query = f"INSERT INTO {table_name} ({', '.join(f'[{f}]' for f in fields)}) VALUES\n" + ",\n".join(values_list) + ";"
     return query
