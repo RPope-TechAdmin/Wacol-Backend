@@ -235,77 +235,100 @@ def clean_value(value):
 # === CONVERT PDF TO SQL INSERTS ===
 def generate_sql_queries_from_pdf(file_bytes, filename):
     queries = []
-    pdf = pdfplumber.open(BytesIO(file_bytes))
-    for i, page in enumerate(pdf.pages):
-        if i < 2:
-            continue  # Skip cover/index pages
 
-        page_text = page.extract_text()
-        submatrix = extract_submatrix(page_text)
-        if submatrix and submatrix.lower() in FIELD_MAP:
-            print(f"Submatrix '{submatrix}' found and mapped")
-        else:
-            print(f"Submatrix '{submatrix}' not mapped or invalid")
+    try:
+        pdf = pdfplumber.open(BytesIO(file_bytes))
+    except Exception as e:
+        print(f"❌ Failed to load PDF: {e}")
+        return []
 
-        if not submatrix:
-            logging.info(f"Page {i+1}: No Sub-Matrix found.")
+    for page_number, page in enumerate(pdf.pages[2:], start=3):
+        print(f"--- Processing page {page_number} ---")
+
+        # Detect sub-matrix
+        text = page.extract_text()
+        submatrix_match = re.search(r"Sub[-\s]?Matrix\s*[:\-]?\s*(.*)", text, re.IGNORECASE)
+        if not submatrix_match:
+            print("⚠️ Sub-Matrix not found on this page")
             continue
 
-        field_map = FIELD_MAP.get(submatrix)
-        table_name = QUERY_TYPE_TO_TABLE.get(submatrix)
-        if not field_map or not table_name:
-            logging.info(f"Page {i+1}: No field/table mapping for sub-matrix '{submatrix}'.")
+        submatrix_label = submatrix_match.group(1).strip().lower()
+        print(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
+
+        submatrix_key = None
+        for key in FIELD_MAP:
+            if key.lower() == submatrix_label:
+                submatrix_key = key
+                break
+
+        if not submatrix_key:
+            print(f"⚠️ No field map found for sub-matrix: {submatrix_label}")
+            continue
+
+        field_map = FIELD_MAP[submatrix_key]
+        table_name = TABLE_MAP.get(submatrix_key)
+
+        if not table_name:
+            print(f"⚠️ No table mapping for sub-matrix: {submatrix_key}")
             continue
 
         tables = page.extract_tables()
-        print(f"Page {page + 1}: Found {len(tables)} tables")
+        print(f"Tables found on page {page_number}: {len(tables)} | Sub-Matrix: {submatrix_key}")
+
         if not tables:
-            logging.info(f"Page {i+1}: No tables found.")
             continue
 
         for table in tables:
-            if len(table) < 3:
+            if len(table) < 3 or len(table[0]) < 4:
                 continue
 
-            headers = table[0]  # or however you're indexing it
-            print(f"Header row: {headers}")
+            # Extract metadata
+            sample_location = table[0][3].strip()
+            sampling_datetime = table[1][3].strip()
+            headers = table[0]  # Column headers
+            row_data = {
+                "File Name": filename,
+                "Sample Location": sample_location,
+                "Sampling Date/Time": sampling_datetime,
+            }
 
-            if headers[3] == "----":
-                continue  # Skip invalid table
+            for row in table[2:]:
+                if len(row) < len(headers):
+                    continue
 
-            sample_id = table[0][2]
-            location_row = table[0]
-            datetime_row = table[1]
+                analyte_name = row[0].strip().lower()
+                for mapped_field in field_map:
+                    if mapped_field.lower() == analyte_name or mapped_field.lower() in analyte_name:
+                        for i, header in enumerate(headers[3:], start=3):
+                            if header == "----":
+                                continue
+                            value = row[i].strip() if i < len(row) else None
+                            row_data[mapped_field] = value
+                            break
 
-            for col_idx in range(3, len(location_row)):
-                sample_location = location_row[col_idx]
-                sample_datetime = datetime_row[col_idx]
+            # row_data is ready here
 
-                row_data = {
-                    "File Name": filename,
-                    "Sample Location": sample_location,
-                    "Sampling Date/Time": sample_datetime
-                }
+            # === SQL Query Construction ===
+            metadata_fields = ["File Name", "Sample Location", "Sampling Date/Time"]
+            metadata_values = [filename, sample_location, sampling_datetime]
 
-                for row in table[2:]:
-                    for row in table[2:]:
-                        print(f"Row: {row}")
-                    analyte = row[0]
-                    value = row[col_idx]
-                    row_data[analyte] = value
+            for analyte in field_map:
+                if analyte not in metadata_fields:
+                    metadata_fields.append(analyte)
+                    metadata_values.append(row_data.get(analyte))
 
-                fields = []
-                values = []
+            columns_str = ", ".join(f"[{col}]" for col in metadata_fields)
+            values_str = ", ".join(
+                f"'{val}'" if isinstance(val, str) else str(val) if val is not None else "NULL"
+                for val in metadata_values
+            )
 
-                for field in field_map:
-                    fields.append(f"[{field}]")
-                    values.append(clean_value(row_data.get(field, "NULL")))
+            sql = f"INSERT INTO {table_name} ({columns_str}) VALUES ({values_str});"
+            print(f"✅ Generated SQL:\n{sql}")
+            queries.append(sql)
 
-                query = f"INSERT INTO {table_name} ({', '.join(fields)}) VALUES ({', '.join(values)});"
-                queries.append(query)
-                logging.info(queries)
+        print(f"--- Finished processing page {page_number} ---\n")
 
-    pdf.close()
     return queries
 
 # === AZURE FUNCTION MAIN ===
