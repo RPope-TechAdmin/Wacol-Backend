@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, text
 
 # === CONFIGURATION ===
 cors_headers = {
-    "Access-Control-Allow-Origin": "https://delightful-tree-0888c340f.1.azurestaticapps.net", 
+    "Access-Control-Allow-Origin": "https://victorious-sea-0e2d21c00.1.azurestaticapps.net", 
     "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
     "Access-Control-Allow-Headers": "Content-Type, Accept",
     "Access-Control-Max-Age": "86400"
@@ -269,7 +269,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
             continue
 
         field_map = SUBMATRIX_MAP[submatrix_key]
-        table_name = TABLE_MAP.get(submatrix_key)
+        table_name = SUBMATRIX_MAP.get(submatrix_key)
 
         if not table_name:
             logging.info(f"⚠️ No table mapping for sub-matrix: {submatrix_key}")
