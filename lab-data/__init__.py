@@ -194,7 +194,7 @@ NON_ANALYTE_LABELS = [
     "EG035C: Leachable Mercury by FIMS"
 ]
 
-QUERY_TYPE_TO_TABLE = {
+TABLE_MAP = {
     "ds-pfas": "[Jackson].[DSPFAS]",
     "ds-int": "[Jackson].[DSInt]",
     "ds-ext": "[Jackson].[DSExt]"
