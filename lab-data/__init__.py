@@ -375,6 +375,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             sql = f"INSERT INTO {table_name} ({columns_sql}) VALUES\n" + ",\n".join(row_sqls) + ";"
             queries.append(sql)
 
+            logging.info(sql)
         # Run all queries
         try:
             username = os.environ["SQL_USER"]
