@@ -195,9 +195,8 @@ NON_ANALYTE_LABELS = [
 ]
 
 TABLE_MAP = {
-    "ds-pfas": "[Jackson].[DSPFAS]",
-    "ds-int": "[Jackson].[DSInt]",
-    "ds-ext": "[Jackson].[DSExt]"
+    "fixation": "[Wacol].[DSPFAS]",
+    "trade waste": "[Wacol].[DSExt]"
 }
 
 def normalize(text):
@@ -235,6 +234,10 @@ def clean_value(value):
 # === CONVERT PDF TO SQL INSERTS ===
 def generate_sql_queries_from_pdf(file_bytes, filename):
     queries = []
+    collected_data = []
+    current_submatrix_key = None
+    current_field_map = []
+    table_name = None
 
     try:
         pdf = pdfplumber.open(BytesIO(file_bytes))
@@ -245,94 +248,95 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
     for page_number, page in enumerate(pdf.pages[2:], start=3):
         logging.info(f"--- Processing page {page_number} ---")
 
-        # Detect sub-matrix
+        # Detect sub-matrix label
         text = page.extract_text()
-        submatrix_match = re.search(r"Sub-Matrix\s*[:\-]?\s*([A-Z]+)", text, re.IGNORECASE)
+        submatrix_match = re.search(r"Sub-?Matrix\s*[:\-]?\s*([A-Za-z]+)", text, re.IGNORECASE)
         if submatrix_match:
-            submatrix_raw = submatrix_match.group(1).strip()
-            submatrix = submatrix_raw.split()[0].upper()  # Only take first word
+            submatrix_label = submatrix_match.group(1).strip().upper()
         else:
-            submatrix = "UNKNOWN"
+            submatrix_label = "UNKNOWN"
 
+        logging.info(f"🧩 Sub-Matrix Detected: {submatrix_label}")
 
-        submatrix_label = submatrix_match.group(1).strip().lower()
-        logging.info(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
+        # Check if sub-matrix changed
+        if submatrix_label != current_submatrix_key:
+            if collected_data and table_name:
+                # Generate INSERT query for the collected data
+                query = build_insert_query(table_name, current_field_map, collected_data)
+                if query:
+                    queries.append(query)
+                    logging.info(f"✅ SQL INSERT built for sub-matrix {current_submatrix_key}")
 
-        submatrix_key = None
-        for key in SUBMATRIX_MAP:
-            if key.lower() == submatrix_label:
-                submatrix_key = key
-                break
+            # Reset for new sub-matrix
+            current_submatrix_key = submatrix_label
+            current_field_map = SUBMATRIX_MAP.get(current_submatrix_key, [])
+            table_name = TABLE_MAP.get(current_submatrix_key.lower())
+            collected_data = []
 
-        if not submatrix_key:
-            logging.info(f"⚠️ No field map found for sub-matrix: {submatrix_label}")
-            continue
-
-        field_map = SUBMATRIX_MAP[submatrix_key]
-        table_name = SUBMATRIX_MAP.get(submatrix_key)
-
-        if not table_name:
-            logging.info(f"⚠️ No table mapping for sub-matrix: {submatrix_key}")
-            continue
+            if not current_field_map or not table_name:
+                logging.info(f"⚠️ Skipping page: no mapping for sub-matrix {current_submatrix_key}")
+                continue
 
         tables = page.extract_tables()
-        logging.info(f"Tables found on page {page_number}: {len(tables)} | Sub-Matrix: {submatrix_key}")
-
-        if not tables:
-            continue
+        logging.info(f"📄 Tables found: {len(tables)} on page {page_number}")
 
         for table in tables:
             if len(table) < 3 or len(table[0]) < 4:
                 continue
 
-            # Extract metadata
             sample_location = table[0][3].strip()
             sampling_datetime = table[1][3].strip()
-            headers = table[0]  # Column headers
-            row_data = {
+
+            base_data = {
                 "File Name": filename,
                 "Sample Location": sample_location,
                 "Sampling Date/Time": sampling_datetime,
             }
 
             for row in table[2:]:
-                if len(row) < len(headers):
+                if len(row) < 4:
                     continue
+                analyte_raw = row[0].strip()
+                analyte = normalize(analyte_raw)
 
-                analyte_name = row[0].strip().lower()
-                for mapped_field in field_map:
-                    if mapped_field.lower() == analyte_name or mapped_field.lower() in analyte_name:
-                        for i, header in enumerate(headers[3:], start=3):
-                            if header == "----":
-                                continue
-                            value = row[i].strip() if i < len(row) else None
-                            row_data[mapped_field] = value
-                            break
+                if any(normalize(f) == analyte for f in current_field_map):
+                    for idx, val in enumerate(row[3:], start=3):
+                        header = table[0][idx].strip()
+                        if header == "----":
+                            continue
+                        base_data[analyte_raw] = val.strip()
+            collected_data.append(base_data)
 
-            # row_data is ready here
-
-            # === SQL Query Construction ===
-            metadata_fields = ["File Name", "Sample Location", "Sampling Date/Time"]
-            metadata_values = [filename, sample_location, sampling_datetime]
-
-            for analyte in field_map:
-                if analyte not in metadata_fields:
-                    metadata_fields.append(analyte)
-                    metadata_values.append(row_data.get(analyte))
-
-            columns_str = ", ".join(f"[{col}]" for col in metadata_fields)
-            values_str = ", ".join(
-                f"'{val}'" if isinstance(val, str) else str(val) if val is not None else "NULL"
-                for val in metadata_values
-            )
-
-            sql = f"INSERT INTO {table_name} ({columns_str}) VALUES ({values_str});"
-            logging.info(f"✅ Generated SQL:\n{sql}")
-            queries.append(sql)
-
-        logging.info(f"--- Finished processing page {page_number} ---\n")
+    # Final flush at end of PDF
+    if collected_data and table_name:
+        query = build_insert_query(table_name, current_field_map, collected_data)
+        if query:
+            queries.append(query)
 
     return queries
+
+def build_insert_query(table_name, field_map, data_rows):
+    if not data_rows:
+        return None
+
+    fields = ["File Name", "Sample Location", "Sampling Date/Time"] + [f for f in field_map if f not in ("File Name", "Sample Location", "Sampling Date/Time")]
+
+    values_list = []
+    for row in data_rows:
+        row_values = []
+        for field in fields:
+            value = row.get(field)
+            if value is None or value.strip() == "" or value.strip() == "----":
+                row_values.append("NULL")
+            elif re.match(r"^[\d\.<>=-]+$", value):
+                row_values.append(value)
+            else:
+                escaped_value = value.replace("'", "''")
+                row_values.append(f"'{escaped_value}'")
+        values_list.append(f"({', '.join(row_values)})")
+
+    query = f"INSERT INTO {table_name} ({', '.join(f'[{f}]' for f in fields)}) VALUES\n" + ",\n".join(values_list) + ";"
+    return query
 
 # === AZURE FUNCTION MAIN ===
 def main(req: func.HttpRequest) -> func.HttpResponse:
