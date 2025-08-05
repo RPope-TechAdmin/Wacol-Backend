@@ -356,8 +356,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 logging.warning(f"Skipped non-PDF file: {filename}")
                 continue
 
+            queries = generate_sql_queries_from_pdf(part.content, filename)
+
             try:
-                queries = generate_sql_queries_from_pdf(part.content, filename)
                 responses.append({
                     "file": filename,
                     "query_count": len(queries),
