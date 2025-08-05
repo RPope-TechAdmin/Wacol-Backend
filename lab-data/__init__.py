@@ -360,6 +360,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "query_count": len(queries),
                     "queries": queries
                 })
+                if not queries:
+                    print("⚠️ No SQL queries were generated.")
+                else:
+                    print(f"✅ Generated {len(queries)} SQL queries:")
+                    for i, q in enumerate(queries, 1):
+                        print(f"[Query {i}]\n{q}")
+
             except Exception as e:
                 logging.exception(f"Failed to parse PDF: {filename}")
                 responses.append({
