@@ -43,7 +43,7 @@ FIELD_MAP = {
 
 SUBMATRIX_MAP = {
     "FIXATION":FIELD_MAP["fixation"],
-    "SOIL SAMPLE ID FIXATION ---- ---- ---- ----": ["File Name","Sample Location","Sampling Date/Time","Moisture Content ----","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","Initial pH ----",
+    "SOIL": ["File Name","Sample Location","Sampling Date/Time","Moisture Content ----","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","Initial pH ----",
             "After HCl pH ----","Extraction Fluid Number ----","Final pH ----","Extraction Fluid Number ----","alpha-BHC","Hexachlorobenzene (HCB)","beta-BHC","gamma-BHC - (Lindane)","delta-BHC","Heptachlor","Aldrin",
             "Heptachlor epoxide","Total Chlordane (sum) ----","trans-Chlordane","alpha-Endosulfan","cis-Chlordane","Dieldrin","4.4`-DDE","Endrin","Endosulfan (sum)","beta-Endosulfan","4.4`-DDD","Endrin aldehyde","Endosulfan sulfate","4.4`-DDT",
             "Endrin ketone","Methoxychlor","Sum of DDD + DDE + DDT","Sum of Aldrin + Dieldrin","Dichlorvos","Demeton-S-methyl","Monocrotophos","Dimethoate","Diazinon","Chlorpyrifos-methyl","Parathion-methyl","Malathion",
@@ -53,7 +53,7 @@ SUBMATRIX_MAP = {
             "C15 - C28 Fraction ----","C29 - C36 Fraction ----","C10 - C36 Fraction (sum) ----","C6 - C10 Fraction","C6 - C10 Fraction  minus BTEX (F1)",">C10 - C16 Fraction ----",">C16 - C34 Fraction ----",">C34 - C40 Fraction ----",">C10 - C40 Fraction (sum) ----",">C10 - C16 Fraction minus Naphthalene (F2) ----","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene",
             "ortho-Xylene","Total Xylenes ----","Sum of BTEX ----","Naphthalene","Dibromo-DDE","DEF","Phenol-d6","2-Chlorophenol-D4","2.4.6-Tribromophenol","2-Fluorobiphenyl","Anthracene-d10","4-Terphenyl-d14","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene"
             ],
-    "TCLP LEACHATE SAMPLE ID FIXATION ---- ---- ---- ----": ["File Name","Sample Location","Sampling Date/Time","Moisture Content","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","alpha-BHC","Hexachlorobenzene (HCB)","beta-BHC","gamma-BHC - (Lindane)","delta-BHC","Heptachlor","Aldrin",
+    "TCLP LEACHATE": ["File Name","Sample Location","Sampling Date/Time","Moisture Content","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","alpha-BHC","Hexachlorobenzene (HCB)","beta-BHC","gamma-BHC - (Lindane)","delta-BHC","Heptachlor","Aldrin",
             "Heptachlor epoxide","Total Chlordane (sum) ----","trans-Chlordane","alpha-Endosulfan","cis-Chlordane","Dieldrin","4.4`-DDE","Endrin","Endosulfan (sum)","beta-Endosulfan","4.4`-DDD","Endrin aldehyde","Endosulfan sulfate","4.4`-DDT",
             "Endrin ketone","Methoxychlor","Sum of DDD + DDE + DDT","Sum of Aldrin + Dieldrin","Dichlorvos","Demeton-S-methyl","Monocrotophos","Dimethoate","Diazinon","Chlorpyrifos-methyl","Parathion-methyl","Malathion",
             "Fenthion","Chlorpyrifos","Parathion","Pirimphos-ethyl","Chlorfenvinphos","Bromophos-ethyl","Fenamiphos","Prothiofos","Ethion","Carbophenothion","Azinphos Methyl","Phenol","2-Chlorophenol","2-Methylphenol","3- & 4-Methylphenol",
@@ -62,7 +62,7 @@ SUBMATRIX_MAP = {
             "C15 - C28 Fraction ----","C29 - C36 Fraction ----","C10 - C36 Fraction (sum) ----",">C10 - C16 Fraction ----",">C16 - C34 Fraction ----",">C34 - C40 Fraction ----",">C10 - C40 Fraction (sum) ----",">C10 - C16 Fraction minus Naphthalene (F2) ----","Dibromo-DDE","DEF",
             "Phenol-d6","2-Chlorophenol-D4","2.4.6-Tribromophenol","2-Fluorobiphenyl","Anthracene-d10","4-Terphenyl-d14"
             ],
-    "ZHE LEACHATE SAMPLE ID FIXATION ---- ---- ---- ----": ["File Name","Sample Location","Sampling Date/Time","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","Styrene","ortho-Xylene","Isopropylbenzene","n-Propylbenzene","1.3.5-Trimethylbenzene","sec-Butylbenzene","1.2.4-Trimethylbenzene","tert-Butylbenzene","p-Isopropyltoluene","n-Butylbenzene",
+    "ZHE LEACHATE": ["File Name","Sample Location","Sampling Date/Time","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","Styrene","ortho-Xylene","Isopropylbenzene","n-Propylbenzene","1.3.5-Trimethylbenzene","sec-Butylbenzene","1.2.4-Trimethylbenzene","tert-Butylbenzene","p-Isopropyltoluene","n-Butylbenzene",
                      "C6 - C9 Fraction ----","C6 - C10 Fraction","C6 - C10 Fraction  minus BTEX (F1)","Total Xylenes ----","Sum of BTEX ----","Naphthalene","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene","1.2-Dichloroethane-D4","Toluene-D8","4-Bromofluorobenzene"
             ],
 }
@@ -223,192 +223,115 @@ PARTIAL_MATCH_MAP = {
       normalize(">C10 - C16 Fraction minus Naphthalene (F2)"): "TRH C10 - C16 Fraction minus Naphthalene",
       normalize("^ C6 - C10 Fraction minus BTEX C6_C10-BTEX (F1)"): "TRH NEPMC6 - C10 Fraction minus BTEX"
 }
+# === IDENTIFY SUB-MATRIX FROM TEXT ===
+def extract_submatrix(page_text):
+    match = re.search(r"Sub-?Matrix:\s*(.+)", page_text, re.IGNORECASE)
+    return match.group(1).strip().upper() if match else None
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Function Triggered")
-    try:
-        logging.info("Parsing multipart form data...")
-        content_type = req.headers.get("Content-Type", "")
-        if not content_type or 'multipart/form-data' not in content_type:
-            return func.HttpResponse("⚠️ Invalid content type", status_code=400)
-        
-        body = req.get_body()
-        logging.info(f"Raw request body length: {len(body)} bytes")
+# === CLEAN VALUE ===
+def clean_value(value):
+    return "NULL" if value in ("", None, "----") else f"'{value}'" if not re.match(r"^[\d\.<>=-]+$", value) else value
 
-        multipart_data = decoder.MultipartDecoder(req.get_body(), content_type)
+# === CONVERT PDF TO SQL INSERTS ===
+def generate_sql_queries_from_pdf(file_bytes, filename):
+    queries = []
+    pdf = pdfplumber.open(BytesIO(file_bytes))
+    for i, page in enumerate(pdf.pages):
+        if i < 2:
+            continue  # Skip cover/index pages
 
-        file_name, file_content,query_type = None, None, None
-        for part in multipart_data.parts:
-            content_disp = part.headers.get(b"Content-Disposition", b"").decode()
-            if 'filename="' in content_disp and content_disp.endswith('.pdf"'):
-                file_content = part.content
-                match = re.search(r'filename="(.+?)"', content_disp)
-                if match:
-                    file_name = match.group(1)
-            
-            disposition = part.headers.get(b'Content-Disposition', b'').decode()
+        page_text = page.extract_text()
+        submatrix = extract_submatrix(page_text)
+        if not submatrix:
+            logging.info(f"Page {i+1}: No Sub-Matrix found.")
+            continue
 
-            if 'name="file"' in disposition:
-                file_content = part.content
-                filename = disposition.split('filename="')[1].split('"')[0]
-                logging.info(f"✅ File received: {filename}, size={len(file_content)}")
+        field_map = FIELD_MAPS.get(submatrix)
+        table_name = TABLE_MAP.get(submatrix)
+        if not field_map or not table_name:
+            logging.info(f"Page {i+1}: No field/table mapping for sub-matrix '{submatrix}'.")
+            continue
 
-            elif 'name="query_type"' in disposition:
-                query_type = part.text.strip()
-                logging.info(f"✅ Query type: {query_type}")
+        tables = page.extract_tables()
+        if not tables:
+            logging.info(f"Page {i+1}: No tables found.")
+            continue
 
-        if not file_content:
-            return func.HttpResponse(json.dumps({"error": "No PDF uploaded"}), status_code=400)
-
-        combined_by_submatrix = {}
-
-        with pdfplumber.open(BytesIO(file_content)) as pdf:
-            current_submatrix = None
-            for page_number, page in enumerate(pdf.pages):
-                if page_number < 2:
-                    continue
-
-                text = page.extract_text() or ""
-                match = re.search(r"Sub[- ]?Matrix[:\s]+([A-Za-z0-9\-/ ]+)", text, re.IGNORECASE)
-                if match:
-                    current_submatrix = match.group(1).strip().lower().replace(" ", "-")
-                    logging.info(current_submatrix)
-
-                if not current_submatrix or current_submatrix not in FIELD_MAP:
-                    continue
-
-                tables = page.extract_tables()
-                if not tables:
-                    continue
-
-                target_fields = FIELD_MAP[current_submatrix]
-                analyte_fields = target_fields[2:]
-                submatrix_rows = combined_by_submatrix.setdefault(current_submatrix, {})
-
-                for table in tables:
-                    if not table or len(table) < 3:
-                        continue
-
-                    sample_locations = table[0][3:]
-                    sample_datetimes = table[1][3:]
-
-                    for col_index, sample_location in enumerate(sample_locations):
-                        if not sample_location or sample_location.strip() == '----':
-                            continue
-
-                        date_val = sample_datetimes[col_index] if col_index < len(sample_datetimes) else "NULL"
-                        key = (sample_location.strip(), date_val.strip())
-                        row_dict = submatrix_rows.setdefault(key, {
-                            "File Name": f"'{file_name}'" if file_name else "NULL",
-                            "Sample Location": f"'{sample_location.strip()}'",
-                            "Sampling Date/Time": f"'{date_val.strip()}'" if date_val.strip() else "NULL"
-                        })
-
-                        logging.info(sample_location)
-                        logging.info(sample_datetimes)
-                        logging.info(page_number)
-
-                        i = 3
-                        while i < len(table):
-                            row = table[i]
-                            if not row or len(row) < (col_index + 4):
-                                i += 1
-                                continue
-
-                            analyte = row[0].strip()
-                            normalized_analyte = normalize(analyte)
-                            logging.info(f"Analyte: {analyte}, Normalised: {normalized_analyte}")
-
-                            if not analyte or normalized_analyte in NON_ANALYTE_LABELS:
-                                i += 1
-                                continue
-
-                            match = next((f for f in analyte_fields if normalize(f) == normalized_analyte), None)
-
-                            if not match:
-                                logging.info(f"Unable to find exact match for {analyte}, Checking against CAS")
-                                cas_hits = re.findall(r'\b\d{2,7}-\d{2}-\d\b', analyte)
-                                for cas in cas_hits:
-                                    if cas in CAS_TO_FULL:
-                                        full_name = CAS_TO_FULL[cas]
-                                        if full_name in analyte_fields:
-                                            match = full_name
-                                            logging.info(f"Match Identified: {analyte} -->{match}")
-                                            break
-
-                            if not match and normalized_analyte in PARTIAL_MATCH_MAP:
-                                logging.info(f"Match not found in CAS for {analyte}, Checking for Partial Match")
-                                match = PARTIAL_MATCH_MAP[normalized_analyte]
-
-                            if not match:
-                                logging.info(f"Partial Match not found, Checking for Possible Abbreviation")
-                                abbrev_found = re.findall(r'\b[a-z]{2,6}\b', normalized_analyte)
-                                for abbrev in abbrev_found:
-                                    if abbrev in ABBREV_TO_FULL:
-                                        full_name = ABBREV_TO_FULL[abbrev]
-                                        if full_name in analyte_fields:
-                                            match = full_name
-                                            break
-
-                            if not match and len(normalized_analyte) > 10:
-                                match = next((f for f in analyte_fields if normalize(f) in normalized_analyte or normalized_analyte in normalize(f)), None)
-
-                            val = row[col_index + 3] if col_index + 3 < len(row) else None
-                            if match and val:
-                                if val:
-                                    val = val.strip().replace("<", "").replace("~", "")
-                                row_dict[match] = val if re.match(r'^-?\d+(\.\d+)?$', val) else "NULL"
-
-
-                            i += 1
-
-        # SQL build per submatrix
-        queries = []
-        for submatrix_type, rows_dict in combined_by_submatrix.items():
-            table_name = QUERY_TYPE_TO_TABLE.get(submatrix_type)
-            if not table_name:
+        for table in tables:
+            if len(table) < 3:
                 continue
 
-            target_fields = FIELD_MAP[submatrix_type]
-            columns_sql = ", ".join([f"[{f}]" for f in target_fields])
-            row_sqls = []
+            headers = table[0]
+            if headers[3] == "----":
+                continue  # Skip invalid table
 
-            for row_dict in rows_dict.values():
-                row_values = []
-                for i, field in enumerate(target_fields):
-                    val = row_dict.get(field, "NULL")
-                    if i < 3:
-                        val = val.strip("'").replace("'", "''") if val != "NULL" else "NULL"
-                        row_values.append(f"'{val}'" if val != "NULL" else "NULL")
-                    else:
-                        row_values.append(val if re.match(r'^-?\d+(\.\d+)?$', val) else "NULL")
-                row_sqls.append(f"           ({', '.join(row_values)})")
+            sample_id = table[0][2]
+            location_row = table[0]
+            datetime_row = table[1]
 
-            sql = f"INSERT INTO {table_name} ({columns_sql}) VALUES\n" + ",\n".join(row_sqls) + ";"
-            queries.append(sql)
+            for col_idx in range(3, len(location_row)):
+                sample_location = location_row[col_idx]
+                sample_datetime = datetime_row[col_idx]
 
-            logging.info(sql)
-        # Run all queries
-        try:
-            username = os.environ["SQL_USER"]
-            password = os.environ["SQL_PASSWORD"]
-            server = os.environ["SQL_SERVER"]
-            db = os.environ["SQL_DB_LAB"]
+                row_data = {
+                    "File Name": filename,
+                    "Sample Location": sample_location,
+                    "Sampling Date/Time": sample_datetime
+                }
 
-            with pymssql.connect(server, username, password, db) as conn:
-                with conn.cursor() as cursor:
-                    for query in queries:
-                        logging.info("Executing query:")
-                        logging.info(query[:500])
-                        cursor.execute(query)
-                conn.commit()
+                for row in table[2:]:
+                    analyte = row[0]
+                    value = row[col_idx]
+                    row_data[analyte] = value
 
-            return func.HttpResponse(json.dumps({"status": "success", "executed_queries": len(queries)}), status_code=200)
+                fields = []
+                values = []
 
-        except Exception as e:
-            logging.exception("Database insert failed.")
-            return func.HttpResponse(json.dumps({"error": "DB insert failed", "details": str(e)}), status_code=500)
+                for field in field_map:
+                    fields.append(f"[{field}]")
+                    values.append(clean_value(row_data.get(field, "NULL")))
+
+                query = f"INSERT INTO {table_name} ({', '.join(fields)}) VALUES ({', '.join(values)});"
+                queries.append(query)
+
+    pdf.close()
+    return queries
+
+# === AZURE FUNCTION MAIN ===
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        content_type = req.headers.get('Content-Type')
+        if not content_type or not content_type.startswith("multipart/form-data"):
+            return func.HttpResponse("Invalid content type", status_code=400)
+
+        body = req.get_body()
+        multipart_data = decoder.MultipartDecoder(body, content_type)
+
+        responses = []
+
+        for part in multipart_data.parts:
+            disposition = part.headers.get(b'Content-Disposition', b'').decode()
+            filename_match = re.search(r'filename="(.+?)"', disposition)
+            filename = filename_match.group(1) if filename_match else "Unknown"
+
+            queries = generate_sql_queries_from_pdf(part.content, filename)
+
+            responses.append({
+                "file": filename,
+                "query_count": len(queries),
+                "queries": queries
+            })
+
+        return func.HttpResponse(
+            body=json.dumps(responses, indent=2),
+            status_code=200,
+            mimetype="application/json"
+        )
 
     except Exception as e:
-        logging.exception("Unhandled exception")
-        return func.HttpResponse(json.dumps({"error": "Unhandled exception", "details": str(e)}), status_code=500)
+        logging.exception("Failed to process PDF")
+        return func.HttpResponse(
+            body=json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
