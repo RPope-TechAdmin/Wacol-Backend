@@ -259,7 +259,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
         logging.info(f"🧩 Detected Sub-Matrix Label: {submatrix_label}")
 
         submatrix_key = None
-        for key in FIELD_MAP:
+        for key in SUBMATRIX_MAP:
             if key.lower() == submatrix_label:
                 submatrix_key = key
                 break
