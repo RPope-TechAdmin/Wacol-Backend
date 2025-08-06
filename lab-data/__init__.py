@@ -297,6 +297,8 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
                 if len(row) < 4:
                     continue
                 analyte_raw = (row[0] or "").strip()
+                logging.info(f"Analyte raw: '{analyte_raw}' | Sub-matrix: {submatrix_label}")
+
                 analyte = normalize(analyte_raw)
 
                 if any(normalize(f) == analyte for f in current_field_map):
@@ -305,6 +307,9 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
                         if header == "----":
                             continue
                         base_data[analyte_raw] = val.strip()
+                        logging.info(f"Matched analyte: {analyte}")
+                    else:
+                        logging.warning(f"Unmatched analyte: '{analyte_raw}' (Sub-matrix: {submatrix_name})")
             collected_data.append(base_data)
 
     # Final flush at end of PDF
