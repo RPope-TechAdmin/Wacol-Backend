@@ -293,121 +293,73 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
                 "Sampling Date/Time": sampling_datetime,
             }
 
-            for row in table[2:]:
-                if len(row) < 4:
+            for row in table:
+                if not row or len(row) < 4:
                     continue
+
                 analyte_raw = (row[0] or "").strip()
-                logging.info(f"Analyte raw: '{analyte_raw}' | Sub-matrix: {submatrix_label}")
+                if not analyte_raw:
+                    logging.info(f"Skipping row with empty analyte in Sub-Matrix: {current_submatrix_key}")
+                    continue
 
-                analyte = normalize(analyte_raw)
+                logging.debug(f"Raw analyte name: '{analyte_raw}' in Sub-Matrix: {current_submatrix_key}")
+                analyte = current_submatrix_key.get(analyte_raw.lower())
 
-                if any(normalize(f) == analyte for f in current_field_map):
-                    for idx, val in enumerate(row[3:], start=3):
-                        header = table[0][idx].strip()
-                        if header == "----":
-                            continue
-                        base_data[analyte_raw] = val.strip()
-                        logging.info(f"Matched analyte: {analyte}")
-                    else:
-                        logging.warning(f"Unmatched analyte: '{analyte_raw}' (Sub-matrix: {submatrix_name})")
-            collected_data.append(base_data)
+                if not analyte:
+                    logging.warning(f"Unrecognized analyte: '{analyte_raw}' in Sub-Matrix: {current_submatrix_key}")
+                    continue
 
-    # Final flush at end of PDF
-    if collected_data and table_name:
-        query = build_insert_query(table_name, current_field_map, collected_data)
-        if query:
-            queries.append(query)
+                values = row[3:]  # Skip to the values starting at column 4
+                if not values or all((v is None or v.strip() == "" or v.strip() == "----") for v in values):
+                    logging.info(f"No valid data found for analyte '{analyte}' in row: {row}")
+                    continue
 
-    return queries
+                logging.info(f"Matched analyte '{analyte}' | Values: {values}")
 
-def build_insert_query(table_name, field_map, data_rows):
-    if not data_rows:
-        return None
+                for idx, value in enumerate(values):
+                    if value is None or value.strip() in ("", "----"):
+                        continue
 
-    fields = ["File Name", "Sample Location", "Sampling Date/Time"] + [f for f in field_map if f not in ("File Name", "Sample Location", "Sampling Date/Time")]
+                    try:
+                        location = sample_location[idx]
+                        date_time = sampling_datetime[idx]
+                    except IndexError:
+                        logging.warning(f"Index out of range when getting sample data at index {idx}")
+                        continue
 
-    values_list = []
-    for row in data_rows:
-        row_values = []
-        for field in fields:
-            value = row.get(field)
-            if value is None:
-                row_values.append("NULL")
-            else:
-                val_stripped = value.strip()
-                if val_stripped == "" or val_stripped == "----":
-                    row_values.append("NULL")
-                elif re.match(r"^[\d\.<>=-]+$", val_stripped):
-                    row_values.append(val_stripped)
-                else:
-                    escaped_value = val_stripped.replace("'", "''")
-                    row_values.append(f"'{escaped_value}'")
+                    # Initialize row dict
+                    if location not in row:
+                        row[location] = {
+                            "File Name": filename,
+                            "Sample Location": location,
+                            "Sampling Date/Time": date_time,
+                        }
 
-                    values_list.append(f"({', '.join(row_values)})")
+                    row[location][analyte] = value
 
-    query = f"INSERT INTO {table_name} ({', '.join(f'[{f}]' for f in fields)}) VALUES\n" + ",\n".join(values_list) + ";"
-    return query
+            # === BUILD SQL QUERIES ===
+            for location, data in row.items():
+                try:
+                    columns = []
+                    values = []
+                    for key in FIELD_MAP[current_submatrix_key]:
+                        columns.append(f"[{key}]")
+                        value = data.get(key, "NULL")
+                        if isinstance(value, str):
+                            if value.upper() == "NULL":
+                                values.append("NULL")
+                            else:
+                                # Escape single quotes
+                                safe_value = value.replace("'", "''")
+                                values.append(f"'{safe_value}'")
+                        else:
+                            values.append(str(value))
 
-# === AZURE FUNCTION MAIN ===
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    try:
-        content_type = req.headers.get('Content-Type')
-        if not content_type or not content_type.startswith("multipart/form-data"):
-            return func.HttpResponse("Invalid content type", status_code=400)
+                    column_str = ", ".join(columns)
+                    value_str = ", ".join(values)
 
-        body = req.get_body()
-        multipart_data = decoder.MultipartDecoder(body, content_type)
-
-        responses = []
-
-        for part in multipart_data.parts:
-            disposition = part.headers.get(b'Content-Disposition', b'').decode()
-            filename_match = re.search(r'filename="(.+?)"', disposition)
-            filename = filename_match.group(1) if filename_match else "Unknown"
-
-            # ✅ Check if it's a PDF file
-            if not filename.lower().endswith(".pdf"):
-                logging.warning(f"Skipped non-PDF file: {filename}")
-                continue
-
-            queries = generate_sql_queries_from_pdf(part.content, filename)
-
-            try:
-                responses.append({
-                    "file": filename,
-                    "query_count": len(queries),
-                    "queries": queries
-                })
-                if not queries:
-                    logging.info("⚠️ No SQL queries were generated.")
-                else:
-                    logging.info(f"✅ Generated {len(queries)} SQL queries:")
-                    for i, q in enumerate(queries, 1):
-                        logging.info(f"[Query {i}]\n{q}")
-
-            except Exception as e:
-                logging.exception(f"Failed to parse PDF: {filename}")
-                responses.append({
-                    "file": filename,
-                    "error": str(e)
-                })
-
-            response_body={
-                            "filename": filename,
-                            "queries":queries
-                    }
-
-        return func.HttpResponse(
-            body=json.dumps(response_body),
-            mimetype="application/json",
-            status_code=200,
-            headers=cors_headers
-        )
-
-    except Exception as e:
-        logging.exception("Failed to process PDF")
-        return func.HttpResponse(
-            body=json.dumps({"error": str(e)}),
-            status_code=500,
-            mimetype="application/json"
-        )
+                    query = f"INSERT INTO [Jackson].[{current_submatrix_key.upper()}] ({column_str}) VALUES ({value_str})"
+                    queries.append(query)
+                    logging.info(f"Generated SQL query for {current_submatrix_key}: {query}")
+                except Exception as e:
+                    logging.error(f"Failed to generate query for location {location} in {current_submatrix_key}: {e}")
