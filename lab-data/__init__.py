@@ -245,7 +245,7 @@ def generate_sql_queries_from_pdf(file_bytes, filename):
         logging.info(f"❌ Failed to load PDF: {e}")
         return []
 
-    for page_number, page in enumerate(pdf.pages[2:], start=3):
+    for page_number, page in enumerate(pdf.pages[2:], start=2):
         logging.info(f"--- Processing page {page_number} ---")
 
         # Detect sub-matrix label
