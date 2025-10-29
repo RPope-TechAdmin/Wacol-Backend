@@ -7,3 +7,5 @@ python-tds
 requests_toolbelt>=1.0.0
 requests
 python-multipart
+pyodbc
+openpyxl
