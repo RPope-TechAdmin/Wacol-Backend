@@ -159,6 +159,7 @@ def safe_sheet_name(name: str) -> str:
 # ========= MAIN FUNCTION =========
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Azure function 'lab-data-download' has been triggered.")
     logging.info("Processing /download-excel request")
     try:
         data = req.get_json()
