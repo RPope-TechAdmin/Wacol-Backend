@@ -97,6 +97,7 @@ def connect_with_fallback(timeout_seconds: int = 60) -> pyodbc.Connection:
         )
         for attempt in range(3):
             try:
+                logging.info("Attemting DB Connection")
                 return pyodbc.connect(conn_str)
             except Exception as e:
                 last_exc = e
@@ -162,6 +163,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         data = req.get_json()
     except ValueError:
+        logging.error("Request body is not valid JSON.")
         return func.HttpResponse("Invalid JSON body.", status_code=400)
 
     start_date = data.get("startDate")
@@ -169,23 +171,25 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if not start_date or not end_date:
         return func.HttpResponse("Both startDate and endDate are required.", status_code=400)
 
+    logging.debug(f"Received request with start date: {start_date}, end date: {end_date}")
+
     grouped = normalize_payload(data)
     if not grouped:
         return func.HttpResponse("No analytes selected.", status_code=400)
+    
+    logging.debug(f"Normalized payload selections: {grouped}")
 
     # Open workbook
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
-
-
     try:
-        
-
         conn = connect_with_fallback(timeout_seconds=60)
         cursor = conn.cursor()
+        logging.info("Successfully connected to the database.")
 
         any_rows_written = False
+        sheets_created = 0
 
         for group_key, analytes in grouped.items():
             table = GROUP_TO_TABLE.get(group_key, group_key)
@@ -193,35 +197,39 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 logging.warning(f"Skipping unknown/unauthorized table: {table}")
                 continue
 
+            logging.debug(f"Processing group '{group_key}' for table '{table}'.")
+
             analyte_cols = whitelist_columns(table, analytes)
             if not analyte_cols:
                 logging.info(f"No valid analyte columns for {table}, requested: {analytes}")
                 continue
+            
+            logging.debug(f"Whitelisted columns for {table}: {analyte_cols}")
 
             sql = build_select_sql(table, analyte_cols)
             logging.info(f"Running query for {table}: {sql}")
             cursor.execute(sql, (start_date, end_date))
             rows = cursor.fetchall()
             columns = [d[0] for d in cursor.description]
-
-            logging.info(f"Grouped selections: {grouped}")
-            logging.info(f"SQL about to run: {sql}")
-            logging.info(f"Row count returned: {len(rows)}")
-
+            logging.info(f"Query for {table} returned {len(rows)} rows.")
 
             ws = wb.create_sheet(title=safe_sheet_name(group_key))
+            sheets_created += 1
             ws.append(columns)
 
             if rows:
                 for row in rows:
                     ws.append(list(row))
                 any_rows_written = True
+                logging.debug(f"Wrote {len(rows)} data rows to sheet '{ws.title}'.")
             else:
                 ws.append(["No data found for this selection."])
 
         if not wb.worksheets:  # safety: if nothing created
             ws = wb.create_sheet(title="Results")
             ws.append(["No data found at all."])
+
+        logging.info(f"Created {sheets_created} sheets for the Excel file.")
 
         output = BytesIO()
         wb.save(output)
@@ -239,7 +247,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Download error: {e}", exc_info=True)
         return func.HttpResponse(f"Error: {e}", status_code=500)
     finally:
-        try: cursor.close()
-        except Exception: pass
-        try: conn.close()
-        except Exception: pass
+        if 'cursor' in locals() and cursor:
+            try: cursor.close()
+            except Exception: pass
+        if 'conn' in locals() and conn:
+            try: conn.close()
+            except Exception: pass
+        logging.debug("Database connection and cursor closed.")
