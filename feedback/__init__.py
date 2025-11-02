@@ -98,13 +98,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("✅ Feedback saved to SQL database")
         try:
             recipient="rpope@purenv.au"
-            subject="New Feedback for Jackson Dashboard!"
+            subject="New Feedback for Wacol Dashboard!"
             body =  (
             f"Hello,\n\n"
-            f"A new feedback submission has been added to the Jackson Dashboard.\n\n"
+            f"A new feedback submission has been added to the Wacol Dashboard.\n\n"
             f"Name: {name}\n"
             f"Feedback: {feedback}\n\n"
-            f"Cheers,\nThe Jackson Dashboard Bot"
+            f"Cheers,\nThe Wacol Dashboard Bot"
         )
 
             send_email(recipient, subject, body)
