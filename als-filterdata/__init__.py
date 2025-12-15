@@ -7,7 +7,6 @@ import logging
 import requests
 import azure.functions as func
 from datetime import datetime, timedelta
-from docx import Document
 from pathlib import Path
 
 cors_headers = {
