@@ -62,8 +62,8 @@ ID_COLUMNS = ["File","Sample Date", "Sample Name"]
 # Non-analyte identifier columns you always want back
 TABLE_ID_COLUMNS: Dict[str, List[str]] = {
     "[Wacol].[Fixation]": ["File","Sample Date"],
-    "[Wacol].[Trade Waste]": ["File Name","Sample Date"],
-    "[Wacol].[Stormwater]": ["File Name","Sample Date"]
+    "[Wacol].[Trade Waste]": ["File","Sample Date"],
+    "[Wacol].[Stormwater]": ["File","Sample Date"]
 }
 
 # ========= DB CONNECT =========
