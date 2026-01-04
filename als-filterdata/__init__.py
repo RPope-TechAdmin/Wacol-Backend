@@ -289,7 +289,7 @@ def main(timer: func.TimerRequest) -> None:
         password = os.environ["API_PASSWORD"]
 
         # === Get request parameters ===
-        from_days_ago = 7  # Fetch data from the last 7 days
+        from_days_ago = 21  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
 
