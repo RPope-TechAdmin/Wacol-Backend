@@ -281,7 +281,7 @@ TCLP_UNIT_MAP = {
     },
 }
 
-def main(timer: func.TimerRequest) -> None:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
     try:
