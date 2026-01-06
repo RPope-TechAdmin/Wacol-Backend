@@ -490,8 +490,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 conn.close()
 
         logging.info(f"Function finished. {len(sql_statements)} records processed.")
+    
+        return func.HttpResponse(
+            body=json.dumps({
+                "status": "success",
+                "records_processed": len(sql_statements)
+            }),
+            mimetype="application/json",
+            status_code=200
+        )
+
     except Exception as e:
-        logging.error(f"Error: {e}")
+        logging.exception("Unhandled exception")
+        return func.HttpResponse(
+            body=json.dumps({"error": str(e)}),
+            mimetype="application/json",
+            status_code=500
+        )
+
 
 def build_sql_insert(sample_records, project_table):
     """
