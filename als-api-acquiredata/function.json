@@ -1,18 +1,11 @@
 {
+  "scriptFile": "__init__.py",
   "bindings": [
     {
-      "authLevel": "anonymous",
-      "type": "httpTrigger",
+      "name": "timer",
+      "type": "timerTrigger",
       "direction": "in",
-      "name": "req",
-      "methods": ["get", "post", "options"],
-      "route": "ald-api-acquiredata"
-    },
-    {
-      "type": "http",
-      "direction": "out",
-      "name": "$return"
+      "schedule": "0 0 5 * * 5"
     }
-  ],
-  "scriptFile": "__init__.py"
+  ]
 }
