@@ -110,7 +110,9 @@ PROJECT_MAP = {
     "Fixation":"Fixation",
     "FIXATION":"Fixation",
     "Stormwater": "Stormwater",
+    "STORMWATER": "Stormwater",
     "Trade Waste": "Trade Waste",
+    "TRADE WASTE": "Trade Waste",
 }
 
 TCLP_UNIT_MAP = {
@@ -278,7 +280,7 @@ TCLP_UNIT_MAP = {
     },
 }
 
-def main(timer: func.TimerRequest) -> None:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
     try:
