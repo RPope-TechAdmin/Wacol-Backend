@@ -3,7 +3,7 @@ import io
 import time
 import json
 import logging
-import pyodbc
+import pymssql
 import requests
 import azure.functions as func
 from datetime import datetime, timedelta
@@ -434,60 +434,49 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             workorder_code=workorder_code
         )
 
-        def connect_with_fallback(timeout_seconds: int = 60) -> pyodbc.Connection:
-            sql_server= os.environ["SQL_SERVER"]
-            sql_database= os.environ["SQL_DB_LAB"]
-            sql_username= os.environ["SQL_USER"]
-            sql_password= os.environ["SQL_PASSWORD"]
-            """
-            Try ODBC Driver 18 then 17. Increase Connection Timeout and retry a few times
-            (useful if Azure SQL Serverless is resuming).
-            """
-            drivers = ["ODBC Driver 18 for SQL Server", "ODBC Driver 17 for SQL Server"]
-            last_exc = None
+        def connect_sql_pymssql(timeout_seconds: int = 60):
+            sql_server = os.environ["SQL_SERVER"]
+            sql_database = os.environ["SQL_DB_LAB"]
+            sql_username = os.environ["SQL_USER"]
+            sql_password = os.environ["SQL_PASSWORD"]
 
-            for driver in drivers:
-                conn_str = (
-                    f"Driver={{{driver}}};"
-                    f"Server=tcp:{sql_server},1433;"
-                    f"Database={sql_database};"
-                    f"Uid={sql_username};"
-                    f"Pwd={sql_password};"
-                    "Encrypt=yes;"
-                    "TrustServerCertificate=no;"
-                    f"Connection Timeout={timeout_seconds};"
-                )
-                for attempt in range(3):
-                    try:
-                        return pyodbc.connect(conn_str)
-                    except Exception as e:
-                        last_exc = e
-                        logging.warning(f"Connect attempt {attempt+1}/3 with {driver} failed: {e}")
-                        time.sleep(3)
-            # If we get here, all attempts failed
-            raise last_exc
+            return pymssql.connect(
+                server=sql_server,
+                user=sql_username,
+                password=sql_password,
+                database=sql_database,
+                login_timeout=timeout_seconds,
+                timeout=timeout_seconds,
+                as_dict=False
+            )
 
         # === Step 4: Execute SQL statements ===
         conn = None
         cursor = None
         try:
-            conn = connect_with_fallback(timeout_seconds=60)
+            conn = connect_sql_pymssql(timeout_seconds=60)
             cursor = conn.cursor()
-            
+
             if not sql_statements:
                 logging.info("No SQL statements to execute.")
             else:
                 logging.info(f"Executing {len(sql_statements)} SQL statements...")
                 for sql in sql_statements:
                     cursor.execute(sql)
+
                 conn.commit()
                 logging.info("✅ Successfully executed and committed SQL statements.")
+
+        except Exception as e:
+            logging.error(f"SQL execution failed: {e}")
+            raise
 
         finally:
             if cursor:
                 cursor.close()
             if conn:
                 conn.close()
+
 
         logging.info(f"Function finished. {len(sql_statements)} records processed.")
     
