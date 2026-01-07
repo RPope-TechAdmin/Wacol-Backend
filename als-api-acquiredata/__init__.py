@@ -514,7 +514,7 @@ def build_sql_insert(sample_records, project_table):
     # Generate SQL
     field_list = ", ".join([f"[{f}]" for f in fields])
     value_list = ", ".join([values[f] for f in fields])
-    sql = f"INSERT INTO [Jackson].[{project_table}] ({field_list}) VALUES ({value_list});"
+    sql = f"INSERT INTO [Wacol].[{project_table}] ({field_list}) VALUES ({value_list});"
     return sql
 
 def process_lab_json(data, project_no=None, workorder_code=None):
