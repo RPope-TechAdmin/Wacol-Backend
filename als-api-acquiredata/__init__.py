@@ -434,67 +434,36 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             workorder_code=workorder_code
         )
 
-        def connect_sql_pymssql(timeout_seconds: int = 60):
-            sql_server = os.environ["SQL_SERVER"]
-            sql_database = os.environ["SQL_DB_LAB"]
-            sql_username = os.environ["SQL_USER"]
-            sql_password = os.environ["SQL_PASSWORD"]
-
-            return pymssql.connect(
-                server=sql_server,
-                user=sql_username,
-                password=sql_password,
-                database=sql_database,
-                login_timeout=timeout_seconds,
-                timeout=timeout_seconds,
-                as_dict=False
+        # === Step 4: Return SQL file ===
+        if not sql_statements:
+            return func.HttpResponse(
+                json.dumps({"message": "No SQL statements generated"}),
+                mimetype="application/json",
+                status_code=200,
+                headers=cors_headers
             )
 
-        # === Step 4: Execute SQL statements ===
-        conn = None
-        cursor = None
-        try:
-            conn = connect_sql_pymssql(timeout_seconds=60)
-            cursor = conn.cursor()
+        sql_content = "\n".join(sql_statements)
+        filename = f"lab_data_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.sql"
 
-            if not sql_statements:
-                logging.info("No SQL statements to execute.")
-            else:
-                logging.info(f"Executing {len(sql_statements)} SQL statements...")
-                for sql in sql_statements:
-                    cursor.execute(sql)
-
-                conn.commit()
-                logging.info("✅ Successfully executed and committed SQL statements.")
-
-        except Exception as e:
-            logging.error(f"SQL execution failed: {e}")
-            raise
-
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-
-        logging.info(f"Function finished. {len(sql_statements)} records processed.")
-    
         return func.HttpResponse(
-            body=json.dumps({
-                "status": "success",
-                "records_processed": len(sql_statements)
-            }),
-            mimetype="application/json",
+            body=sql_content,
+            mimetype="application/sql",
+            headers={
+                **cors_headers,
+                "Content-Disposition": f"attachment; filename={filename}"
+            },
             status_code=200
         )
 
+
     except Exception as e:
-        logging.exception("Unhandled exception")
+        logging.exception("Unhandled error")
         return func.HttpResponse(
-            body=json.dumps({"error": str(e)}),
+            json.dumps({"error": str(e)}),
             mimetype="application/json",
-            status_code=500
+            status_code=500,
+            headers=cors_headers
         )
 
 
