@@ -762,7 +762,7 @@ def main(timer: func.TimerRequest) -> None:
         password = os.environ["API_PASSWORD"]
 
         # === Set parameters for timer trigger ===
-        from_days_ago = 190  # Fetch data from the last 7 days
+        from_days_ago = 7  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
         
