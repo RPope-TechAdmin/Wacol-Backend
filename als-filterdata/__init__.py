@@ -19,7 +19,7 @@ cors_headers = {
 TABLE_FIELD_MAP = {
     "Trade Waste": {
         "File","Sample Date","pH Value","Total Dissolved Solids @180°C","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Chemical Oxygen Demand","Arsenic","Iron","Zinc","Nitrite + Nitrate as N","Total Kjeldahl Nitrogen as N","Total Nitrogen as N","Total Phosphorus as P"
-        ,"Sulfate as SO4 - Turbidimetric","Oil & Grease","C6 - C9 Fraction","C10 - C14 Fraction","C15 - C28 Fraction","C29 - C36 Fraction","C10 - C36 Fraction (sum)","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)"
+        ,"Oil & Grease","C6 - C9 Fraction","C10 - C14 Fraction","C15 - C28 Fraction","C29 - C36 Fraction","C10 - C36 Fraction (sum)","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)"
         ,">C16 - C34 Fraction",">C34 - C40 Fraction",">C10 - C40 Fraction (sum)","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","ortho-Xylene","Total Xylenes","Sum of BTEX","Naphthalene"
     },  
     "Fixation 2025": {
@@ -291,7 +291,7 @@ def main(timer: func.TimerRequest) -> None:
         password = os.environ["API_PASSWORD"]
 
         # === Get request parameters ===
-        from_days_ago = 21  # Fetch data from the last 7 days
+        from_days_ago = 28  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
 
