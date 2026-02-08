@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 cors_headers = {
-    "Access-Control-Allow-Origin": "https://victorious-pond-02e3be310.2.azurestaticapps.net", 
+    "Access-Control-Allow-Origin": "https://victorious-sea-0e2d21c00.1.azurestaticapps.net", 
     "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
     "Access-Control-Allow-Headers": "Content-Type, Accept",
     "Access-Control-Max-Age": "86400"
@@ -18,20 +18,32 @@ cors_headers = {
 
 TABLE_FIELD_MAP = {
     "Trade Waste": {
-        "File","Sample Date","pH Value","Total Dissolved Solids @180°C","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Chemical Oxygen Demand","Arsenic","Iron","Zinc","Nitrite + Nitrate as N","Total Kjeldahl Nitrogen as N","Total Nitrogen as N","Total Phosphorus as P"
-        ,"Oil & Grease","C6 - C9 Fraction","C10 - C14 Fraction","C15 - C28 Fraction","C29 - C36 Fraction","C10 - C36 Fraction (sum)","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)"
-        ,">C16 - C34 Fraction",">C34 - C40 Fraction",">C10 - C40 Fraction (sum)","Benzene","Toluene","Ethylbenzene","meta- & para-Xylene","ortho-Xylene","Total Xylenes","Sum of BTEX","Naphthalene"
+        "File","Sample Date","Sample Name","4.4`-DDD","4.4`-DDE","4.4`-DDT","Aldrin","alpha-BHC","alpha-Endosulfan","Azinphos Methyl","beta-BHC","beta-Endosulfan","Bromophos-ethyl","Carbophenothion","Chlorfenvinphos","Chlorpyrifos","Chlorpyrifos-methyl","cis-Chlordane","delta-BHC","Demeton-S-methyl","Diazinon","Dichlorvos","Dieldrin"
+        ,"Dimethoate","Endosulfan sulfate","Endrin","Endrin aldehyde","Endrin ketone","Ethion","Fenamiphos","Fenthion","gamma-BHC - (Lindane)","Heptachlor","Heptachlor epoxide","Hexachlorobenzene (HCB)","Malathion","Methoxychlor","Monocrotophos","Parathion","Parathion-methyl","Pirimphos-ethyl","Prothiofos","Sum of Aldrin + Dieldrin"
+        ,"Sum of DDD + DDE + DDT","Total Chlordane (sum)","trans-Chlordane","Mercury","Arsenic","Cadmium","Chromium","Copper","Lead","Nickel","Zinc",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)"
+        ,"C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)","C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","AMPA","Glyphosate","2.4.5-T","2.4.6-T","2.4-D","2.4-DB","2.4-DP","2.6-D","4-Chlorophenoxy acetic acid"
+        ,"Clopyralid","Dicamba","Fluroxypyr","MCPA","MCPB","Mecoprop","Picloram","Silvex (2.4.5-TP/Fenoprop)","Triclopyr","pH Value","Total Nitrogen as N","Total Kjeldahl Nitrogen as N","Nitrite + Nitrate as N","Nitrate as N","Nitrite as N","Ammonia as N","Total Phosphorus as P","Biochemical Oxygen Demand","Chemical Oxygen Demand"
+        ,"Suspended Solids (SS)","Total Organic Carbon","Dilution Factor"
     },  
-    "Fixation 2025": {
-        "File","Sample Date","Moisture Content","Arsenic","Cadmium","Chromium","Copper","Lead","Nickel","Zinc","TCLP Arsenic","TCLP Cadmium","TCLP Chromium","TCLP Copper","TCLP Lead","TCLP Nickel","TCLP Zinc","After HCl pH","Extraction Fluid Number","Final pH","Initial pH","ZHE Extraction Fluid Number"
-        ,"C10 - C14 Fraction","TCLP C10 - C14 Fraction","C10 - C36 Fraction (sum)","TCLP C10 - C36 Fraction (sum)","C15 - C28 Fraction","TCLP C15 - C28 Fraction","C29 - C36 Fraction","TCLP C29 - C36 Fraction","C6 - C9 Fraction","TCLP C6 - C9 Fraction",">C10 - C16 Fraction","TCLP >C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)"
-        ,"TCLP >C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)","TCLP >C10 - C40 Fraction (sum)",">C16 - C34 Fraction","TCLP >C16 - C34 Fraction",">C34 - C40 Fraction","TCLP >C34 - C40 Fraction","C6 - C10 Fraction  minus BTEX (F1)","TCLP C6 - C10 Fraction  minus BTEX (F1)","C6 - C10 Fraction","TCLP C6 - C10 Fraction"
-        ,"Benzene","TCLP Benzene","Ethylbenzene","TCLP Ethylbenzene","meta- & para-Xylene","TCLP meta- & para-Xylene","Naphthalene","TCLP Naphthalene","ortho-Xylene","TCLP ortho-Xylene","Sum of BTEX","TCLP Sum of BTEX","Toluene","TCLP Toluene","Total Xylenes","TCLP Total Xylenes"
+    "Fixation": {
+        "File","Sample Date","Sample Name","Moisture Content","4.4`-DDD","4.4`-DDE","4.4`-DDT","Aldrin","alpha-BHC","alpha-Endosulfan","Azinphos Methyl","beta-BHC","beta-Endosulfan","Bromophos-ethyl","Carbophenothion","Chlorfenvinphos","Chlorpyrifos","Chlorpyrifos-methyl","cis-Chlordane","delta-BHC","Demeton-S-methyl","Diazinon","Dichlorvos","Dieldrin"
+        ,"Dimethoate","Endosulfan (sum)","Endosulfan sulfate","Endrin","Endrin aldehyde","Endrin ketone","Ethion","Fenamiphos","Fenthion","gamma-BHC - (Lindane)","Heptachlor","Heptachlor epoxide","Hexachlorobenzene (HCB)","Malathion","Methoxychlor","Monocrotophos","Parathion","Parathion-methyl","Pirimphos-ethyl","Prothiofos","Sum of Aldrin + Dieldrin"
+        ,"Sum of DDD + DDE + DDT","Total Chlordane (sum)","trans-Chlordane",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)"
+        ,"C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","2.4.5-Trichlorophenol","2.4.6-Trichlorophenol","2.4-Dichlorophenol","2.4-Dimethylphenol","2.6-Dichlorophenol","2-Chlorophenol","2-Methylphenol","2-Nitrophenol","3- & 4-Methylphenol","4-Chloro-3-methylphenol"
+        ,"Acenaphthene","Acenaphthylene","Anthracene","Benz(a)anthracene","Benzo(a)pyrene","Benzo(a)pyrene TEQ (half LOR)","Benzo(a)pyrene TEQ (LOR)","Benzo(a)pyrene TEQ (zero)","Benzo(b+j)fluoranthene","Benzo(g.h.i)perylene","Benzo(k)fluoranthene","Chrysene","Dibenz(a.h)anthracene","Fluoranthene","Fluorene","Indeno(1.2.3.cd)pyrene","PAH Naphthalene"
+        ,"Pentachlorophenol","Phenanthrene","Phenol","Pyrene","Sum of polycyclic aromatic hydrocarbons","Antimony","Arsenic","Barium","Beryllium","Boron","Cadmium","Chromium","Cobalt","Copper","Lead","Manganese","Molybdenum","Nickel","Selenium","Tin","Zinc","Mercury","After HCl pH","Extraction Fluid Number","Final pH","Initial pH","ZHE Extraction Fluid Number"
+        ,"TCLP 4.4`-DDD","TCLP 4.4`-DDE","TCLP 4.4`-DDT","TCLP Aldrin","TCLP alpha-BHC","TCLP alpha-Endosulfan","TCLP Azinphos Methyl","TCLP beta-BHC","TCLP beta-Endosulfan","TCLP Bromophos-ethyl","TCLP Carbophenothion","TCLP Chlorfenvinphos","TCLP Chlorpyrifos","TCLP Chlorpyrifos-methyl","TCLP cis-Chlordane","TCLP delta-BHC","TCLP Demeton-S-methyl"
+        ,"TCLP Diazinon","TCLP Dichlorvos","TCLP Dieldrin","TCLP Dimethoate","TCLP Endosulfan sulfate","TCLP Endrin","TCLP Endrin aldehyde","TCLP Endrin ketone","TCLP Ethion","TCLP Fenamiphos","TCLP Fenthion","TCLP gamma-BHC - (Lindane)","TCLP Heptachlor","TCLP Heptachlor epoxide","TCLP Hexachlorobenzene (HCB)","TCLP Malathion","TCLP Methoxychlor"
+        ,"TCLP Monocrotophos","TCLP Parathion","TCLP Parathion-methyl","TCLP Pirimphos-ethyl","TCLP Prothiofos","TCLP Sum of Aldrin + Dieldrin","TCLP Sum of DDD + DDE + DDT","TCLP Total Chlordane (sum)","TCLP trans-Chlordane","TCLP >C10 - C16 Fraction","TCLP >C10 - C16 Fraction minus Naphthalene (F2)","TCLP >C10 - C40 Fraction (sum)","TCLP >C16 - C34 Fraction"
+        ,"TCLP >C34 - C40 Fraction","TCLP C10 - C14 Fraction","TCLP C10 - C36 Fraction (sum)","TCLP C15 - C28 Fraction","TCLP C29 - C36 Fraction","TCLP Benzene","TCLP C6 - C10 Fraction","TCLP C6 - C10 Fraction minus BTEX (F1)","TCLP C6 - C9 Fraction","TCLP Ethylbenzene","TCLP meta- & para-Xylene","TCLP Naphthalene","TCLP ortho-Xylene","TCLP Sum of BTEX"
+        ,"TCLP Toluene","TCLP Total Xylenes","TCLP 2.4.5-Trichlorophenol","TCLP 2.4.6-Trichlorophenol","TCLP 2.4-Dichlorophenol","TCLP 2.4-Dimethylphenol","TCLP 2.6-Dichlorophenol","TCLP 2-Chlorophenol","TCLP 2-Methylphenol","TCLP 2-Nitrophenol","TCLP 3- & 4-Methylphenol","TCLP 4-Chloro-3-methylphenol","TCLP Acenaphthene","TCLP Acenaphthylene","TCLP Anthracene"
+        ,"TCLP Benz(a)anthracene","TCLP Benzo(a)pyrene","TCLP Benzo(a)pyrene TEQ (zero)","TCLP Benzo(b+j)fluoranthene","TCLP Benzo(g.h.i)perylene","TCLP Benzo(k)fluoranthene","TCLP Chrysene","TCLP Dibenz(a.h)anthracene","TCLP Fluoranthene","TCLP Fluorene","TCLP Indeno(1.2.3.cd)pyrene","TCLP PAH Naphthalene","TCLP Pentachlorophenol","TCLP Phenanthrene","TCLP Phenol"
+        ,"TCLP Pyrene","TCLP Sum of polycyclic aromatic hydrocarbons","TCLP Antimony","TCLP Arsenic","TCLP Barium","TCLP Beryllium","TCLP Boron","TCLP Cadmium","TCLP Chromium","TCLP Cobalt","TCLP Copper","TCLP Lead","TCLP Manganese","TCLP Molybdenum","TCLP Nickel","TCLP Selenium","TCLP Tin","TCLP Zinc","TCLP Mercury"
     },
     "Stormwater": {
-        "File","Sample Date","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction"
-        ,"C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)","C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes"
-    }
+        "File","Sample Date","Sample Name",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)"
+        ,"C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity"
+    },
 }
 TEST_CODES = {
     "EP071": {
@@ -565,7 +577,7 @@ def build_sql_insert(sample_records, project_table):
     # Generate SQL
     field_list = ", ".join([f"[{f}]" for f in fields])
     value_list = ", ".join([values[f] for f in fields])
-    sql = f"INSERT INTO [Narangba].[{project_table}] ({field_list}) VALUES ({value_list});"
+    sql = f"INSERT INTO [Wacol].[{project_table}] ({field_list}) VALUES ({value_list});"
     return sql
 
 def process_lab_json(data, project_no=None, workorder_code=None):
