@@ -546,7 +546,7 @@ def build_sql_insert(sample_records, project_table):
         if compound in TCLP_UNIT_MAP:
             tclp_cfg = TCLP_UNIT_MAP[compound]
 
-            if units in tclp_cfg["tclp_units"]:
+            if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
                 final_field = tclp_cfg["tclp_field"]
             elif units in tclp_cfg["standard_units"]:
                 final_field = tclp_cfg["standard_field"]
