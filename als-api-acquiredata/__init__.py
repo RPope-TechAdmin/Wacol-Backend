@@ -1003,10 +1003,35 @@ def build_sql_insert(sample_records, project_table):
     for rec in sample_records:
         compound = rec.get("Compound")
         result = rec.get("Result")
-        if compound in fields and result not in [None, ""]:
-            # Normalize result value
-            clean_result = str(result).replace("~", "").replace("<", "")
-            values[compound] = f"{clean_result}"
+        units = (rec.get("Units") or "").strip().lower()
+        code = rec.get("AnalysisMethod")
+
+        if result in [None, ""]:
+            continue
+
+        # --- NEW UNIT-BASED LOGIC ---
+        if compound in TCLP_UNIT_MAP:
+            tclp_cfg = TCLP_UNIT_MAP[compound]
+
+            if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
+                final_field = tclp_cfg["tclp_field"]
+            elif units in tclp_cfg["standard_units"]:
+                final_field = tclp_cfg["standard_field"]
+            else:
+                # If units unknown → fallback to normal compound name
+                final_field = compound
+        elif compound == "Extraction Fluid Number":
+            # not in unit-sensitive list
+            if code=="EN33Z":
+                final_field = "ZHE Extraction Fluid Number"
+            else:
+                final_field = compound
+        else:
+            final_field = compound
+
+        # Only store value if the resulting mapped field actually exists in the table
+        if final_field in fields:
+            values[final_field] = f"{result}"
 
     # Generate SQL
     field_list = ", ".join([f"[{f}]" for f in fields])
