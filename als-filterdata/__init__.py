@@ -478,32 +478,24 @@ def main(timer: func.TimerRequest) -> None:
             # If we get here, all attempts failed
             raise last_exc
         
-        # === Step 4: Execute SQL statements ===
-        conn = None
-        cursor = None
-        try:
-            conn = connect_with_fallback(timeout_seconds=60)
-            cursor = conn.cursor()
-            
-            if not sql_statements:
-                logging.info("No SQL statements to execute.")
-            else:
-                logging.info(f"Executing {len(sql_statements)} SQL statements...")
-                for sql in sql_statements:
-                    cursor.execute(sql)
-                conn.commit()
-                logging.info("✅ Successfully executed and committed SQL statements.")
+        # === Step 4: Return SQL file ===
+        sql_content = "\n".join(sql_statements)
+        filename = f"lab_data_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.sql"
 
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-        logging.info(f"Function finished. {len(sql_statements)} records processed.")
+        return func.HttpResponse(
+            body=sql_content,
+            mimetype="application/sql",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
     except Exception as e:
         logging.error(f"Error: {e}")
-
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            mimetype="application/json",
+            status_code=500,
+        )
 
 def build_sql_insert(sample_records, project_table):
     """
