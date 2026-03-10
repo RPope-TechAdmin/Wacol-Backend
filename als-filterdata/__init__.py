@@ -41,9 +41,8 @@ TABLE_FIELD_MAP = {
         ,"TCLP Pyrene","TCLP Sum of polycyclic aromatic hydrocarbons","TCLP Antimony","TCLP Arsenic","TCLP Barium","TCLP Beryllium","TCLP Boron","TCLP Cadmium","TCLP Chromium","TCLP Cobalt","TCLP Copper","TCLP Lead","TCLP Manganese","TCLP Molybdenum","TCLP Nickel","TCLP Selenium","TCLP Tin","TCLP Zinc","TCLP Mercury"
     },
     "Stormwater": {
-        "File","Sample Date","Sample Name",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)"
-        ,"C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity"
-    },
+        "File","Sample Date","Sample Name",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)","C6 - C9 Fraction","Ethylbenzene"
+        ,"meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity"    },
 }
 TEST_CODES = {
     "EP071": {
