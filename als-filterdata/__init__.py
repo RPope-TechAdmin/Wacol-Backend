@@ -542,8 +542,16 @@ def build_sql_insert(sample_records, project_table):
             continue
 
         # --- NEW UNIT-BASED LOGIC ---
-        if compound in TCLP_UNIT_MAP:
+        # --- APPLY TCLP LOGIC ONLY FOR FIXATION ---
+        if project_table == "Fixation" and compound in TCLP_UNIT_MAP:
             tclp_cfg = TCLP_UNIT_MAP[compound]
+
+            if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
+                final_field = tclp_cfg["tclp_field"]
+            elif units in {u.lower() for u in tclp_cfg["standard_units"]}:
+                final_field = tclp_cfg["standard_field"]
+            else:
+                final_field = compound
 
             if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
                 final_field = tclp_cfg["tclp_field"]
