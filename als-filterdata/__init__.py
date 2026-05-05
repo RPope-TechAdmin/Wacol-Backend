@@ -538,6 +538,9 @@ def build_sql_insert(sample_records, project_table):
         units = (rec.get("Units") or "").strip().lower()
         code = rec.get("AnalysisMethod")
 
+        if isinstance(result, str) and "<" in result:
+            result = "NULL"
+
         if result in [None, ""]:
             continue
 
