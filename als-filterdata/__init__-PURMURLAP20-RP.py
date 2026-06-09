@@ -169,12 +169,6 @@ TCLP_UNIT_MAP = {
         "standard_units": {"mg/kg"},
         "standard_field": "Zinc",
     },
-    "Mercury": {
-        "tclp_units": {"mg/L", "µg/L"},
-        "tclp_field": "TCLP Mercury",
-        "standard_units": {"mg/kg"},
-        "standard_field": "Mercury",
-    },
     "C10 - C14 Fraction": {
         "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C10 - C14 Fraction",
@@ -543,6 +537,9 @@ def build_sql_insert(sample_records, project_table):
         result = rec.get("Result")
         units = (rec.get("Units") or "").strip().lower()
         code = rec.get("AnalysisMethod")
+
+        if isinstance(result, str) and "<" in result:
+            result = "NULL"
 
         if result in [None, ""]:
             continue
