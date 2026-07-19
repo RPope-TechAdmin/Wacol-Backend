@@ -308,7 +308,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         password = os.environ["API_PASSWORD"]
 
         # === Get request parameters ===
-        from_days_ago = 14  # Fetch data from the last 7 days
+        from_days_ago = 7  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
 
