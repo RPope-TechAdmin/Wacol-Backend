@@ -1,18 +1,16 @@
 import os
 import io
-import time
 import json
-import logging
-import pymssql
+import time
 import pyodbc
+import logging
 import requests
 import azure.functions as func
 from datetime import datetime, timedelta
-from docx import Document
 from pathlib import Path
 
 cors_headers = {
-    "Access-Control-Allow-Origin": "https://victorious-pond-02e3be310.2.azurestaticapps.net", 
+    "Access-Control-Allow-Origin": "https://victorious-sea-0e2d21c00.1.azurestaticapps.net", 
     "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
     "Access-Control-Allow-Headers": "Content-Type, Accept",
     "Access-Control-Max-Age": "86400"
@@ -43,11 +41,9 @@ TABLE_FIELD_MAP = {
         ,"TCLP Pyrene","TCLP Sum of polycyclic aromatic hydrocarbons","TCLP Antimony","TCLP Arsenic","TCLP Barium","TCLP Beryllium","TCLP Boron","TCLP Cadmium","TCLP Chromium","TCLP Cobalt","TCLP Copper","TCLP Lead","TCLP Manganese","TCLP Molybdenum","TCLP Nickel","TCLP Selenium","TCLP Tin","TCLP Zinc","TCLP Mercury"
     },
     "Stormwater": {
-        "File","Sample Date","Sample Name",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)"
-        ,"C6 - C9 Fraction","Ethylbenzene","meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity"
-    },
+        "File","Sample Date","Sample Name",">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction","Benzene","C6 - C10 Fraction","C6 - C10 Fraction minus BTEX (F1)","C6 - C9 Fraction","Ethylbenzene"
+        ,"meta- & para-Xylene","Naphthalene","ortho-Xylene","Sum of BTEX","Toluene","Total Xylenes","pH Value","Electrical Conductivity @ 25°C","Suspended Solids (SS)","Total Organic Carbon","Turbidity"    },
 }
-
 TEST_CODES = {
     "EP071": {
         ">C10 - C16 Fraction",">C10 - C16 Fraction minus Naphthalene (F2)",">C10 - C40 Fraction (sum)",">C16 - C34 Fraction",">C34 - C40 Fraction","C10 - C14 Fraction","C10 - C36 Fraction (sum)","C15 - C28 Fraction","C29 - C36 Fraction"
@@ -132,626 +128,170 @@ PROJECT_MAP = {
 
 TCLP_UNIT_MAP = {
     "Arsenic": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Arsenic",
         "standard_units": {"mg/kg"},
         "standard_field": "Arsenic",
     },
     "Cadmium": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Cadmium",
         "standard_units": {"mg/kg"},
         "standard_field": "Cadmium",
     },
     "Chromium": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Chromium",
         "standard_units": {"mg/kg"},
         "standard_field": "Chromium",
     },
     "Copper": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Copper",
         "standard_units": {"mg/kg"},
         "standard_field": "Copper",
     },
     "Lead": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Lead",
         "standard_units": {"mg/kg"},
         "standard_field": "Lead",
     },
     "Nickel": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Nickel",
         "standard_units": {"mg/kg"},
         "standard_field": "Nickel",
     },
     "Zinc": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Zinc",
         "standard_units": {"mg/kg"},
         "standard_field": "Zinc",
     },
     "C10 - C14 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C10 - C14 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": "C10 - C14 Fraction",
     },
     "C10 - C36 Fraction (sum)": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C10 - C36 Fraction (sum)",
         "standard_units": {"mg/kg"},
         "standard_field": "C10 - C36 Fraction (sum)",
     },
     "C15 - C28 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C15 - C28 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": "C15 - C28 Fraction",
     },
     "C29 - C36 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C29 - C36 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": "C29 - C36 Fraction",
     },
     "C6 - C9 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C6 - C9 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": "C6 - C9 Fraction",
     },
     ">C10 - C16 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP >C10 - C16 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": ">C10 - C16 Fraction",
     },
     ">C10 - C16 Fraction minus Naphthalene (F2)": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP >C10 - C16 Fraction minus Naphthalene (F2)",
         "standard_units": {"mg/kg"},
         "standard_field": ">C10 - C16 Fraction minus Naphthalene (F2)",
     },
     ">C10 - C40 Fraction (sum)": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP >C10 - C40 Fraction (sum)",
         "standard_units": {"mg/kg"},
         "standard_field": ">C10 - C40 Fraction (sum)",
     },
     ">C16 - C34 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP >C16 - C34 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": ">C16 - C34 Fraction",
     },
     ">C34 - C40 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP >C34 - C40 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": ">C34 - C40 Fraction",
     },
     "C6 - C10 Fraction": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C6 - C10 Fraction",
         "standard_units": {"mg/kg"},
         "standard_field": "C6 - C10 Fraction",
     },
     "C6 - C10 Fraction  minus BTEX (F1)": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C6 - C10 Fraction  minus BTEX (F1)",
         "standard_units": {"mg/kg"},
         "standard_field": "C6 - C10 Fraction  minus BTEX (F1)",
     },
     "Benzene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Benzene",
         "standard_units": {"mg/kg"},
         "standard_field": "Benzene",
     },
     "Toluene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Toluene",
         "standard_units": {"mg/kg"},
         "standard_field": "Toluene",
     },
     "Ethylbenzene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Ethylbenzene",
         "standard_units": {"mg/kg"},
         "standard_field": "Ethylbenzene",
     },
     "meta- & para-Xylene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP meta- & para-Xylene",
         "standard_units": {"mg/kg"},
         "standard_field": "meta- & para-Xylene",
     },
     "Naphthalene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Naphthalene",
         "standard_units": {"mg/kg"},
         "standard_field": "Naphthalene",
     },
     "ortho-Xylene": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP ortho-Xylene",
         "standard_units": {"mg/kg"},
         "standard_field": "ortho-Xylene",
     },
     "Sum of BTEX": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Sum of BTEX",
         "standard_units": {"mg/kg"},
         "standard_field": "Sum of BTEX",
     },
     "Total Xylenes": {
-        "tclp_units": {"mg/l", "µg/l"},
+        "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP Total Xylenes",
         "standard_units": {"mg/kg"},
         "standard_field": "Total Xylenes",
     },
-    "4.4`-DDD": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 4.4`-DDD",
-        "standard_units":{"mg/kg"},
-        "standard_field":"4.4`-DDD",
-    },
-    "4.4`-DDE": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 4.4`-DDE",
-        "standard_units":{"mg/kg"},
-        "standard_field":"4.4`-DDE",
-    },
-    "4.4`-DDT": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 4.4`-DDT",
-        "standard_units":{"mg/kg"},
-        "standard_field":"4.4`-DDT",
-    },
-    "Aldrin": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Aldrin",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Aldrin",
-    },
-    "alpha-BHC": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP alpha-BHC",
-        "standard_units":{"mg/kg"},
-        "standard_field":"alpha-BHC",
-    },
-    "alpha-Endosulfan": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP alpha-Endosulfa",
-        "standard_units":{"mg/kg"},
-        "standard_field":"alpha-Endosulfa",
-    },
-    "Azinphos Methyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Azinphos Methyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Azinphos Methyl",
-    },
-    "beta-BHC": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP beta-BHC",
-        "standard_units":{"mg/kg"},
-        "standard_field":"beta-BHC",
-    },
-    "beta-Endosulfan": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP beta-Endosulfan",
-        "standard_units":{"mg/kg"},
-        "standard_field":"beta-Endosulfan",
-    },
-    "Bromophos-ethyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Bromophos-ethyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Bromophos-ethyl",
-    },
-    "Carbophenothion": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Carbophenothion",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Carbophenothion",
-    },
-    "Chlorfenvinphos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Chlorfenvinphos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Chlorfenvinphos",
-    },
-    "Chlorpyrifos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Chlorpyrifos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Chlorpyrifos",
-    },
-    "Chlorpyrifos-methyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Chlorpyrifos-methyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Chlorpyrifos-methyl",
-    },
-    "cis-Chlordane": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "cis-Chlordane",
-        "standard_units":{"mg/kg"},
-        "standard_field":"cis-Chlordane",
-    },
-    "delta-BHC": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP delta-BHC",
-        "standard_units":{"mg/kg"},
-        "standard_field":"delta-BHC",
-    },
-    "Demeton-S-methyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Demeton-S-methyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Demeton-S-methyl",
-    },
-    "Diazinon": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Diazinon",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Diazinon",
-    },
-    "Dichlorvos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Dichlorvos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Dichlorvos",
-    },
-    "Dieldrin": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Dieldrin",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Dieldrin",
-    },
-    "Dimethoate": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Dimethoate",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Dimethoate",
-    },
-    "Endosulfan (sum)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Endosulfan (sum)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Endosulfan (sum)",
-    },
-    "Endosulfan sulfate": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Endosulfan sulfate",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Endosulfan sulfate",
-    },
-    "Endrin": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Endrin",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Endrin",
-    },
-    "Endrin aldehyde": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Endrin aldehyde",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Endrin aldehyde",
-    },
-    "Endrin ketone": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Endrin ketone",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Endrin ketone",
-    },
-    "Ethion": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Ethion",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Ethion",
-    },
-    "Fenamiphos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Fenamiphos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Fenamiphos",
-    },
-    "Fenthion": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Fenthion",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Fenthion",
-    },
-    "gamma-BHC - (Lindane)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP gamma-BHC - (Lindane)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"gamma-BHC - (Lindane)",
-    },
-    "Heptachlor": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Heptachlor",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Heptachlor",
-    },
-    "Heptachlor epoxide": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Heptachlor epoxide",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Heptachlor epoxide",
-    },
-    "Hexachlorobenzene (HCB)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Hexachlorobenzene (HCB)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Hexachlorobenzene (HCB)",
-    },
-    "Malathion": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Malathion",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Malathion",
-    },
-    "Methoxychlor": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Methoxychlor",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Methoxychlor",
-    },
-    "Monocrotophos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Monocrotophos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Monocrotophos",
-    },
-    "Parathion": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Parathion",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Parathion",
-    },
-    "Parathion-methyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Parathion-methyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Parathion-methyl",
-    },
-    "Pirimphos-ethyl": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Pirimphos-ethyl",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Pirimphos-ethyl",
-    },
-    "Prothiofos": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Prothiofos",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Prothiofos",
-    },
-    "Sum of Aldrin + Dieldrin": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Sum of Aldrin + Dieldrin",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Sum of Aldrin + Dieldrin",
-    },
-    "Sum of DDD + DDE + DDT": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Sum of DDD + DDE + DDT",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Sum of DDD + DDE + DDT",
-    },
-    "Total Chlordane (sum)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Total Chlordane (sum)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Total Chlordane (sum)",
-    },
-    "trans-Chlordane": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP trans-Chlordane",
-        "standard_units":{"mg/kg"},
-        "standard_field":"trans-Chlordane",
-    },
-    "2.4.5-Trichlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2.4.5-Trichlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2.4.5-Trichlorophenol",
-    },
-    "2.4.6-Trichlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2.4.6-Trichlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2.4.6-Trichlorophenol",
-    },
-    "2.4-Dichlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2.4-Dichlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2.4-Dichlorophenol",
-    },
-    "2.4-Dimethylphenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2.4-Dimethylphenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2.4-Dimethylphenol",
-    },
-    "2.6-Dichlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2.6-Dichlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2.6-Dichlorophenol",
-    },
-    "2-Chlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2-Chlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2-Chlorophenol",
-    },
-    "2-Methylphenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2-Methylphenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2-Methylphenol",
-    },
-    "2-Nitrophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 2-Nitrophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"2-Nitrophenol",
-    },
-    "3- & 4-Methylphenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 3- & 4-Methylphenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"3- & 4-Methylphenol",
-    },
-    "4-Chloro-3-methylphenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP 4-Chloro-3-methylphenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"4-Chloro-3-methylphenol",
-    },
-    "Acenaphthene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Acenaphthene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Acenaphthene",
-    },
-    "Acenaphthylene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Acenaphthylene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Acenaphthylene",
-    },
-    "Anthracene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Anthracene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Anthracene",
-    },
-    "Benz(a)anthracene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benz(a)anthracene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benz(a)anthracene",
-    },
-    "Benzo(a)pyrene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(a)pyrene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(a)pyrene",
-    },
-    "Benzo(a)pyrene TEQ (half LOR)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(a)pyrene TEQ (half LOR)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(a)pyrene TEQ (half LOR)",
-    },
-    "Benzo(a)pyrene TEQ (LOR)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(a)pyrene TEQ (LOR)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(a)pyrene TEQ (LOR)",
-    },
-    "Benzo(a)pyrene TEQ (zero)": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(a)pyrene TEQ (zero)",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(a)pyrene TEQ (zero)",
-    },
-    "Benzo(b+j)fluoranthene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(b+j)fluoranthene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(b+j)fluoranthene",
-    },
-    "Benzo(g.h.i)perylene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(g.h.i)perylene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(g.h.i)perylene",
-    },
-    "Benzo(k)fluoranthene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Benzo(k)fluoranthene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Benzo(k)fluoranthene",
-    },
-    "Chrysene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Chrysene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Chrysene",
-    },
-    "Dibenz(a.h)anthracene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Dibenz(a.h)anthracene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Dibenz(a.h)anthracene",
-    },
-    "Fluoranthene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Fluoranthene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Fluoranthene",
-    },
-    "Fluorene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Fluorene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Fluorene",
-    },
-    "Indeno(1.2.3.cd)pyrene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Indeno(1.2.3.cd)pyrene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Indeno(1.2.3.cd)pyrene",
-    },
-    "PAH Naphthalene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP PAH Naphthalene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"PAH Naphthalene",
-    },
-    "Pentachlorophenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Pentachlorophenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Pentachlorophenol",
-    },
-    "Phenanthrene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Phenanthrene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Phenanthrene",
-    },
-    "Phenol": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Phenol",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Phenol",
-    },
-    "Pyrene": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Pyrene",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Pyrene",
-    },
-    "Sum of polycyclic aromatic hydrocarbons": {
-        "tclp_units": {"mg/l", "µg/l"},
-        "tclp_field": "TCLP Sum of polycyclic aromatic hydrocarbons",
-        "standard_units":{"mg/kg"},
-        "standard_field":"Sum of polycyclic aromatic hydrocarbons",
-    },
 }
 
-def main(timer: func.TimerRequest) -> None:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
     try:
@@ -761,11 +301,11 @@ def main(timer: func.TimerRequest) -> None:
         username = os.environ["API_USERNAME"]
         password = os.environ["API_PASSWORD"]
 
-        # === Set parameters for timer trigger ===
-        from_days_ago = 7  # Fetch data from the last 7 days
+        # === Get request parameters ===
+        from_days_ago = 30  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
-        
+
         # Default: last 7 days, page=1
         to_dt = datetime.utcnow()
         from_dt = to_dt - timedelta(days=from_days_ago)
@@ -896,14 +436,14 @@ def main(timer: func.TimerRequest) -> None:
 
         # Replace old sample_records with combined data
         sample_records = all_records
+
         # === Step 3: Process data and generate SQL ===
-        # For a timer trigger, we process all fetched records without extra filtering.
         sql_statements = process_lab_json(
             sample_records,
             project_no=project_no,
             workorder_code=workorder_code
         )
-        
+
         def connect_with_fallback(timeout_seconds: int = 60) -> pyodbc.Connection:
             sql_server= os.environ["SQL_SERVER"]
             sql_database= os.environ["SQL_DB_LAB"]
@@ -936,33 +476,25 @@ def main(timer: func.TimerRequest) -> None:
                         time.sleep(3)
             # If we get here, all attempts failed
             raise last_exc
-
-
+        
         # === Step 4: Return SQL file ===
-        conn = None
-        cursor = None
-        try:
-            conn = connect_with_fallback(timeout_seconds=60)
-            cursor = conn.cursor()
-            
-            if not sql_statements:
-                logging.info("No SQL statements to execute.")
-            else:
-                logging.info(f"Executing {len(sql_statements)} SQL statements...")
-                for sql in sql_statements:
-                    cursor.execute(sql)
-                conn.commit()
-                logging.info("✅ Successfully executed and committed SQL statements.")
+        sql_content = "\n".join(sql_statements)
+        filename = f"lab_data_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.sql"
 
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-        logging.info(f"Function finished. {len(sql_statements)} records processed.")
+        return func.HttpResponse(
+            body=sql_content,
+            mimetype="application/sql",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
     except Exception as e:
         logging.error(f"Error: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            mimetype="application/json",
+            status_code=500,
+        )
 
 def build_sql_insert(sample_records, project_table):
     """
@@ -1006,12 +538,23 @@ def build_sql_insert(sample_records, project_table):
         units = (rec.get("Units") or "").strip().lower()
         code = rec.get("AnalysisMethod")
 
+        if isinstance(result, str) and "<" in result:
+            result = "NULL"
+
         if result in [None, ""]:
             continue
 
         # --- NEW UNIT-BASED LOGIC ---
-        if compound in TCLP_UNIT_MAP:
+        # --- APPLY TCLP LOGIC ONLY FOR FIXATION ---
+        if project_table == "Fixation" and compound in TCLP_UNIT_MAP:
             tclp_cfg = TCLP_UNIT_MAP[compound]
+
+            if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
+                final_field = tclp_cfg["tclp_field"]
+            elif units in {u.lower() for u in tclp_cfg["standard_units"]}:
+                final_field = tclp_cfg["standard_field"]
+            else:
+                final_field = compound
 
             if units in {u.lower() for u in tclp_cfg["tclp_units"]}:
                 final_field = tclp_cfg["tclp_field"]
@@ -1057,7 +600,7 @@ def process_lab_json(data, project_no=None, workorder_code=None):
         """Normalize for reliable matching."""
         if val is None:
             return ""
-        return str(val).strip().lower().replace("(", "").replace(")", "").replace("<", "").replace("~", "")
+        return str(val).strip().lower().replace("(", "").replace(")", "")
 
     pn = norm(project_no)
     wo = norm(workorder_code)
