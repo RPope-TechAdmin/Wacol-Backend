@@ -169,12 +169,6 @@ TCLP_UNIT_MAP = {
         "standard_units": {"mg/kg"},
         "standard_field": "Zinc",
     },
-    "Mercury": {
-        "tclp_units": {"mg/L", "µg/L"},
-        "tclp_field": "TCLP Mercury",
-        "standard_units": {"mg/kg"},
-        "standard_field": "Mercury",
-    },
     "C10 - C14 Fraction": {
         "tclp_units": {"mg/L", "µg/L"},
         "tclp_field": "TCLP C10 - C14 Fraction",
@@ -308,7 +302,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         password = os.environ["API_PASSWORD"]
 
         # === Get request parameters ===
-        from_days_ago = 20  # Fetch data from the last 7 days
+        from_days_ago = 30  # Fetch data from the last 7 days
         project_no = None
         workorder_code = None
 
