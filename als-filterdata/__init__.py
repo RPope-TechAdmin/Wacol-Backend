@@ -317,6 +317,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         from_dt = to_dt - timedelta(days=from_days_ago)
         from_param = from_dt.strftime("%Y/%m/%d %H:%M:%S.000Z")
         to_param = to_dt.strftime("%Y/%m/%d %H:%M:%S.000Z")
+        logging.info(f"From:{from_dt}.")
         
         # TODO: Implement pagination if more than one page of results is expected
         page_param = "16"
