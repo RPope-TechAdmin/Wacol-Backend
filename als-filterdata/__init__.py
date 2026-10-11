@@ -5,6 +5,7 @@ import time
 import pyodbc
 import logging
 import requests
+import uuid
 import azure.functions as func
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -300,6 +301,8 @@ TCLP_UNIT_MAP = {
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
+    run_id = str(uuid.uuid4())
+
     try:
         # === Environment variables ===
         auth_url = os.environ["API_AUTH_URL"]
@@ -428,19 +431,35 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             data_json = resp.json()
         except ValueError:
             logging.exception(
-                "ALS returned a non-JSON response: status=%s content_type=%s",
+                "ALS response was not valid JSON: status=%s content_type=%s",
                 resp.status_code,
                 resp.headers.get("Content-Type"),
             )
             raise
 
-        logging.info(
-            "ALS page 1 response shape: type=%s top_level_keys=%s",
-            type(data_json).__name__,
-            list(data_json.keys()) if isinstance(data_json, dict) else None,
-        )
+        # Temporary diagnostic: save this page's raw response before extraction.
+        # Only enable this for a controlled test; the response may contain sensitive lab data.
+        if os.getenv("CAPTURE_ALS_RESPONSE", "false").lower() == "true":
+            debug_dir = Path("/tmp/als_debug")
+            debug_dir.mkdir(parents=True, exist_ok=True)
 
+            debug_file = debug_dir / f"als_page_{current_page}_{run_id}.json"
+            debug_file.write_text(
+                json.dumps(data_json, indent=2, default=str),
+                encoding="utf-8",
+            )
+
+            logging.info(
+                "Saved raw ALS page response: page=%s bytes=%s file=%s",
+                current_page,
+                debug_file.stat().st_size,
+                debug_file.name,
+            )
+
+        # Extract only after the raw response has been captured.
         page_records = extract_records(data_json)
+        logging.info("ALS page %s extracted records: %s", current_page, len(page_records))
+
         logging.info(
             "Page 1: extracted=%s total_pages=%r total_count=%r page_size=%r",
             len(page_records),
