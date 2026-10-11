@@ -397,6 +397,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         started = time.monotonic()
         resp = requests.get(data_url, headers=data_headers, params=params, timeout=60)
+        logging.info("ALS request URL: %s", resp.url)
         elapsed = time.monotonic() - started
 
         logging.info(
@@ -413,6 +414,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             started = time.monotonic()
             resp = requests.get(data_url, headers=data_headers, params=params, timeout=60)
+            logging.info("ALS request URL: %s", resp.url)
             elapsed = time.monotonic() - started
 
             logging.info(
@@ -439,6 +441,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
         page_records = extract_records(data_json)
+        logging.info(
+            "Page 1: extracted=%s total_pages=%r total_count=%r page_size=%r",
+            len(page_records),
+            data_json.get("TotalPages") if isinstance(data_json, dict) else None,
+            data_json.get("TotalCount") if isinstance(data_json, dict) else None,
+            data_json.get("PageSize") if isinstance(data_json, dict) else None,
+        )
         logging.info("ALS page 1 extracted records: %s", len(page_records))
         all_records.extend(page_records)
 
@@ -455,6 +464,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 data_json.get("PageSize"),
                 data_json.get("pageSize"),
             )
+        logging.info(
+            "Page %s: extracted=%s",
+            current_page,
+            len(page_records),
+        )
 
         # Determine total pages
         total_pages = (
