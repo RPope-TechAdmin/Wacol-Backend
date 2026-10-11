@@ -6,6 +6,7 @@ import pyodbc
 import logging
 import requests
 import uuid
+import tempfile
 import azure.functions as func
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -302,6 +303,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
     run_id = str(uuid.uuid4())
+    logging.info("ALS Diagnostic Run Started: run_id=%s", run_id)
 
     try:
         # === Environment variables ===
@@ -551,6 +553,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except ValueError:
                 logging.exception("ALS page %s returned a non-JSON response.", current_page)
                 raise
+
+            if os.getenv("CAPTURE_ALS_RESPONSE", "false").lower() == "true":
+                debug_dir = Path(tempfile.gettempdir()) / "als_debug"
+                debug_dir.mkdir(parents=True, exist_ok=True)
+
+                debug_file = debug_dir / f"als_{run_id}_page_{current_page}.json"
+                debug_file.write_text(
+                    json.dumps(page_json, indent=2, default=str),
+                    encoding="utf-8",
+                )
+
+                logging.info(
+                    "Saved raw ALS page: run_id=%s page=%s bytes=%s filename=%s",
+                    run_id,
+                    current_page,
+                    debug_file.stat().st_size,
+                    debug_file.name,
+                )
 
             page_records = extract_records(page_json)
             logging.info(
