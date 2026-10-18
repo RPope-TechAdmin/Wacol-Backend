@@ -439,25 +439,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
             raise
 
-        # Temporary diagnostic: save this page's raw response before extraction.
-        # Only enable this for a controlled test; the response may contain sensitive lab data.
-        if os.getenv("CAPTURE_ALS_RESPONSE", "false").lower() == "true":
-            debug_dir = Path("/tmp/als_debug")
-            debug_dir.mkdir(parents=True, exist_ok=True)
-
-            debug_file = debug_dir / f"als_page_{current_page}_{run_id}.json"
-            debug_file.write_text(
-                json.dumps(data_json, indent=2, default=str),
-                encoding="utf-8",
-            )
-
-            logging.info(
-                "Saved raw ALS page response: page=%s bytes=%s file=%s",
-                current_page,
-                debug_file.stat().st_size,
-                debug_file.name,
-            )
-
         # Extract only after the raw response has been captured.
         page_records = extract_records(data_json)
         logging.info("ALS page %s extracted records: %s", current_page, len(page_records))
