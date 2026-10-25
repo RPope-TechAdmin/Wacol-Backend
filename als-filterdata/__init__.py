@@ -302,9 +302,6 @@ TCLP_UNIT_MAP = {
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Fetching and filtering lab data to generate SQL...")
 
-    run_id = str(uuid.uuid4())
-    logging.info("ALS Diagnostic Run Started: run_id=%s", run_id)
-
     try:
         # === Environment variables ===
         auth_url = os.environ["API_AUTH_URL"]
