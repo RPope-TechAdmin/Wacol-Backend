@@ -531,25 +531,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except ValueError:
                 logging.exception("ALS page %s returned a non-JSON response.", current_page)
                 raise
-
-            if os.getenv("CAPTURE_ALS_RESPONSE", "false").lower() == "true":
-                debug_dir = Path(tempfile.gettempdir()) / "als_debug"
-                debug_dir.mkdir(parents=True, exist_ok=True)
-
-                debug_file = debug_dir / f"als_{run_id}_page_{current_page}.json"
-                debug_file.write_text(
-                    json.dumps(page_json, indent=2, default=str),
-                    encoding="utf-8",
-                )
-
-                logging.info(
-                    "Saved raw ALS page: run_id=%s page=%s bytes=%s filename=%s",
-                    run_id,
-                    current_page,
-                    debug_file.stat().st_size,
-                    debug_file.name,
-                )
-
+                
             page_records = extract_records(page_json)
             logging.info(
                 "ALS page extracted records: page=%s count=%s",
